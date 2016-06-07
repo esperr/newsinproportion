@@ -1,0 +1,85 @@
+body {
+  font-family: Helvetica, Arial, sans-serif;
+  margin-left: 4em;
+  margin-right: 4em;
+  }
+
+    * {
+    margin: 0;
+    }
+    html, body {
+    height: 100%;
+    }
+    .wrapper {
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    margin: 0 auto -4em;
+    }
+    .footer, .push {
+    height: 4em;
+    clear: both;
+    }
+
+form { margin-top: 2em;
+  margin-bottom: 2em;
+  position: relative;
+}
+
+.hideme { opacity: 0.2; }
+
+#header {
+  font-size: 150%;
+       border-bottom-style: solid;
+    margin-top: 1.5em;
+  margin-bottom: 1em;
+  padding-bottom: .5em;
+  }
+
+#header p {
+  color: grey;
+}
+
+#header h1 {
+  /*font-family: "Cooper Black", Serif; */
+  font-family: "IM Fell DW Pica", Serif;
+}
+
+#search span { font-size: 150%;
+           position: absolute;
+           left: 2em;
+            }
+#main {
+  width: 80%;
+  float: left;
+}
+
+#past {
+  width: 10%;
+  border: 1px solid black;
+  float: right;
+  padding: 1em 2em 2em;
+  }
+
+  #past dt {
+    padding-bottom: .2em;
+  }
+
+  #past dl {
+    padding-bottom: .5em;
+  }
+
+  .showsearches {
+    font-size: 75%;
+    padding-bottom: .5em;
+  }
+  .toggleview { float: right; }
+
+ #results {
+    position: relative;
+ }
+  #loading {
+  position: absolute;
+  top: 25%;
+  left: 25%;
+}

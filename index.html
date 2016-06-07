@@ -1,0 +1,434 @@
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+  <title>Proportional Maps!</title>
+  <link rel="stylesheet" type="text/css"
+      href="https://fonts.googleapis.com/css?family=IM Fell DW Pica">
+  <link href="mystyle.css" rel="stylesheet" type="text/css">
+
+</head>
+
+
+<body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript" src="deciround.js"></script>
+
+<div class="wraper">
+
+<div id="header">
+<h1>News in Proportion</h1>
+<p>Proportional maps of Chronicling America</p>
+</div>
+
+<div id="main">
+<p>Enter your Chronicling America search below:</p>
+<form id="search">
+    <input id="newssearch" type="text" />
+    <input id="runsearch" type="button" value="Search by state" />&nbsp;&nbsp;
+    Chart type: <input type="radio" name="charttype" value="proportional" checked>Proportional <input type="radio" name="charttype" value="counts">Raw counts
+</form>
+
+
+<div id="results">
+  <img src='usmap.png'>
+</div>
+<br /><br />
+</div>
+
+<div id="past">
+  <h4>Searches</h4>
+  <dl></dl>
+</div>
+<div id="stateresults"></div>
+<div class="push"></div>
+</div>
+
+<div class="footer">
+  <p>Design and contruction by Ed Sperr, M.L.I.S. (<a href="mailto:ed_sperr@hotmail.com">ed_sperr@hotmail.com</a>)   |
+  Data courtesy of <a href="http://chroniclingamerica.loc.gov/">Chronicling America</a>  |  Charting tools from  <a href="https://developers.google.com/chart/interactive/docs/gallery/geochart">Google</a></p>
+</div>
+
+
+
+<script>
+
+
+(function() {
+
+var mainwidth = $( "#main" ).width();
+$("#results img").attr("width", mainwidth);
+
+var searches = [];
+var stateCounts = [];
+var states = ["Alabama", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maryland",
+             "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico",
+             "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia"]
+//var newspapers = [];
+
+google.charts.load('current', {'packages':['geochart']});
+
+var countOptions =  { resolution: 'provinces',
+                     tooltip: {isHtml: true},
+                     width: mainwidth,
+                   region: 'US'};
+
+var compOptions = {
+                   resolution: 'provinces',
+                   region: 'US',
+                  tooltip: {isHtml: true},
+                  width: mainwidth,
+
+                   //colorAxis: {minValue: -.055, maxValue: .4, colors: ['#440D57', '#2092BC','#FDE725']},
+                   colorAxis: {colors: ['#440D57', '#2092BC','#FDE725']}
+                  };
+
+
+//set our baseline
+term = "";
+dosearch(term);
+
+
+
+//Actions and display bits
+$("#runsearch").click(function(){
+    handlesearch();
+  });
+
+$(document).keypress(function(e) {
+  if(e.which == 13) {
+      //Because both IE and FF now "helpfully" ignore the spec and treat 'button' the same as 'submit'
+      e.preventDefault();
+      handlesearch();
+  }
+});
+
+function handlesearch() {
+  term = $("#newssearch").val();
+  dosearch(term)
+  $("#newssearch").val("");
+  document.getElementById('newssearch').focus();
+  }
+
+  //We have to use event delegation to select the things added after page load...
+$( "#results" ).on( "click", "#showcounts", function() {
+   var charttype = 'counts';
+   var searchIndex = $(this).attr("name");
+   displayHandler(charttype, searchIndex);
+   });
+
+$( "#results" ).on( "click", "#showprops", function() {
+    var charttype = 'proportional';
+    var searchIndex = $(this).attr("name");
+    displayHandler(charttype, searchIndex);
+    });
+
+$( "#past" ).on( "click", ".pastsearch", function() {
+    var charttype = $( "input:radio[name=charttype]:checked" ).val();
+    var searchIndex = $(this).data("searchIndex");
+    displayHandler(charttype, searchIndex);
+    });
+
+$( "#past" ).on( "click", "#showcompare", function() {
+  $( "#past" ).empty();
+  $( "#past" ).append("<dl>");
+  for (var i = 1; i < searches.length; i++) {
+    $( "#past dl" ).append('<dt><input type="checkbox" name="term" id="' + i + '" value="' + i + '"> <label for="' + i + '">' + searches[i].term + '</label></dt>');
+    }
+  $("#past dl").after('<input id="compare" type="button" value="Compare" /><p style="margin-top: 1em;"><a href="#!" class="showsearches">(go back to search list)</a></p>')
+
+  });
+
+$( "#past" ).on( "click", "#compare", function() {
+    var searchone = $("input[name='term']:checked").first().val();
+    var searchtwo = $("input[name='term']:checked").last().val();
+    compareTerms(searchone, searchtwo);
+    });
+
+$( "#past" ).on( "click", ".showsearches", function() {
+    showSearches();
+    });
+
+//they can only select two terms to compare....
+$( "#past" ).on( "change", "input[name='term']:checked", function() {
+  var cnt = $("input[name='term']:checked").length;
+  if (cnt > 2) {
+    $("input[name='term']:checked").first().prop( "checked", false );
+  }
+});
+
+
+function showWait() {
+  $( "#newssearch" ).prop( "disabled", true );
+  $( "#newssearch" ).addClass( "hideme" );
+  $( "#runsearch" ).addClass( "hideme" );
+  $( "#results" ).addClass( "hideme" );
+  $("#results").append('<img id="loading" src="loading-bars.svg" width="' + mainwidth*.50 + '">');
+
+  //$( "#past" ).addClass( "hideme" );
+  }
+
+function showDone() {
+  $( "#newssearch" ).prop( "disabled", false );
+  $( "#newssearch" ).removeClass( "hideme" );
+  $( "#runsearch" ).removeClass( "hideme" );
+  $( "#results" ).removeClass( "hideme" );
+  $("#results #loading").remove();
+
+  //$( "#past" ).removeClass( "hideme" );
+  }
+
+function showSearches() {
+    $( "#past" ).empty();
+    $( "#past" ).append("<dl>");
+    for (var i = 1; i < searches.length; i++) {
+      $("#past dl").append('<dt class="pastsearch"><a href="#!">' + searches[i].term + "</a></dt>");
+      $("#past dt").last().data("searchIndex", i);
+      }
+      if (searches.length > 2) {
+        $("#past dl").after('<input id="showcompare" type="button" value="Compare terms" />')
+      }
+    }
+
+function newspapers () {
+    alert("got them!");
+
+}
+//search a term and set up for searching by State
+function dosearch(term) {
+  showWait();
+  stateClone = states.slice(0);
+  while (stateCounts.length) { stateCounts.pop(); }
+  $.ajax({
+  url: 'http://chroniclingamerica.loc.gov/search/pages/results/list/',
+  jsonp: "callback",
+  dataType: "jsonp",
+  error: function () { alert("Oops, something went wrong. Please try again!")},
+  data: {
+  rows: '1',
+  searchType: 'basic',
+  proxtext: term,
+  page: '1',
+  format: 'json'
+ },
+  success:  function( data ) {
+    console.log(data);
+    // check for null result
+    if (data.totalItems === '0') {
+      alert ('Nothing found for "' + term + '"');
+      return;
+    }
+    search = {
+      'term': term,
+      'count': data.totalItems,
+      'stateCounts': []
+    };
+    searches.push(search);
+    if (searches.length > 1) {
+      showSearches();
+    }
+    getStateCounts(term);
+  }
+  });
+}
+
+//get counts for each State
+function getStateCounts(term) {
+  state = stateClone.pop();
+	csearch(term, state);
+	if (stateClone.length) {
+      getStateCounts(term);
+	} else {
+		return;
+		}
+}
+
+function csearch(term, state) {
+  $.ajax({
+	url: 'http://chroniclingamerica.loc.gov/search/pages/results/list/',
+  jsonp: "callback",
+  dataType: "jsonp",
+  error: function () { alert("Oops, something went wrong. Please try again!")},
+	data: {
+	rows: '1',
+  searchType: 'basic',
+	state: state,
+	proxtext: term,
+	page: '1',
+	format: 'json'
+ },
+  success:  function( data ) {
+    count = data.totalItems;
+    myIndex = searches.length - 1;
+    mySearch = searches[myIndex];
+    total = mySearch.count;
+    proportion = count / total;
+    stateCount = {
+      'state': state,
+      'count': count,
+      'proportion': proportion
+    };
+    mySearch.stateCounts.push(stateCount);
+
+    if (mySearch.stateCounts.length == states.length) {
+
+      if ($( "input:radio[name=charttype]:checked" ).val() == "proportional") {
+        displayHandler('proportional');
+      } else {
+        displayHandler('counts');
+      }
+    }
+  }
+     });
+}
+
+function stateresults(term, state) {
+  $.ajax({
+	url: 'http://chroniclingamerica.loc.gov/search/pages/results/list/',
+  jsonp: "callback",
+  dataType: "jsonp",
+  error: function () { alert("Oops, something went wrong. Please try again!")},
+	data: {
+	rows: '1',
+  searchType: 'basic',
+	state: state,
+	proxtext: term,
+	page: '1',
+	format: 'json'
+ },
+  success:  function( data ) {
+    count = data.totalItems;
+    myIndex = searches.length - 1;
+    mySearch = searches[myIndex];
+    total = mySearch.count;
+    proportion = count / total;
+    stateCount = {
+      'state': state,
+      'count': count,
+      'proportion': proportion
+    };
+    mySearch.stateCounts.push(stateCount);
+
+    if (mySearch.stateCounts.length == states.length) {
+
+      if ($( "input:radio[name=charttype]:checked" ).val() == "proportional") {
+        displayHandler('proportional');
+      } else {
+        displayHandler('counts');
+      }
+    }
+  }
+     });
+}
+
+//display charts by count and proportion
+function displayHandler(charttype, searchIndex) {
+  if(typeof searchIndex == 'undefined') {
+    var searchIndex = searches.length - 1;
+  }
+  var stateCompArray =  [['State', 'Comparison', 'Tooltip']];
+  var stateCountArray =  [['State', 'Results', 'Tooltip']];
+  showDone();
+  var mySearch = searches[searchIndex];
+  if (searchIndex < 1) {
+    return;
+  } else {
+    $( "#results" ).empty();
+  }
+  $( "#results" ).append( '<div id="chart_div" style="width: 900px; height: 500px;">' );
+  var states = keysrt(mySearch.stateCounts, 'state');
+  var basestates = keysrt(searches[0].stateCounts, 'state');
+  if (charttype == "proportional") {
+    $("#chart_div").before('<h3>Proportion of results of "' + mySearch.term + '" for each State</h3>')
+    $.each( states, function( i, stateitem ) {
+         comparison = stateitem.proportion - basestates[i].proportion;
+         tipText = "<strong>" + Math.round10((stateitem.proportion*100), -2) + "%</strong> of US total</br>" + "(" + stateitem.state + " represents " + Math.round10((basestates[i].proportion*100), -2) + "% of all results)";
+         stateCompArray.push([stateitem.state, comparison, tipText]);
+         });
+    var data = google.visualization.arrayToDataTable(stateCompArray);
+    data.setColumnProperty(2, 'role', 'tooltip');
+    data.setColumnProperty(2, 'html', true);
+    var options = compOptions;
+    $("#chart_div").after('<input id="showcounts" class="toggleview" type="button" name="' + searchIndex + '"value="Show raw counts" />')
+  } else {
+    $("#chart_div").before('<h3>Total count of "' + mySearch.term + '" for each State</h3>')
+    $.each( states, function( i, stateitem ) {
+      tipText = "<strong>" + stateitem.count.toLocaleString() + "</strong> results <br/>(out of " + basestates[i].count.toLocaleString() + " for the state)";
+         stateCountArray.push([stateitem.state, stateitem.count, tipText]);
+         });
+    var data = google.visualization.arrayToDataTable(stateCountArray);
+    data.setColumnProperty(2, 'role', 'tooltip');
+    data.setColumnProperty(2, 'html', true);
+    var options = countOptions;
+    $("#chart_div").after('<input id="showprops" class="toggleview" type="button" name="' + searchIndex + '" value="Show proportions" />')
+  }
+  var chart = new google.visualization.GeoChart( document.getElementById('chart_div') );
+
+  //Here comes the clicky bit...
+  function selectHandler() {
+  var selectedItem = chart.getSelection()[0];
+  if (selectedItem) {
+    var selectstate = data.getValue(selectedItem.row, 0);
+    //alert('The user selected ' + mySearch.term + ' in the context of ' + selectstate);
+    var resultsURL = 'http://chroniclingamerica.loc.gov/search/pages/results/?andtext=' + mySearch.term + '&state=' + selectstate;
+    window.open(resultsURL,'_blank');
+  }
+}
+
+  google.visualization.events.addListener(chart, 'select', selectHandler);
+  chart.draw(data, options);
+}
+
+//Prepare and display term comparison chart
+function compareTerms(searchone, searchtwo) {
+  $( "#results" ).empty();
+  $( "#results" ).append( '<div id="chart_div" style="width: 900px; height: 500px;">' );
+  var termCompArray =  [['State', 'Term Comparison', 'Tooltip']];
+  var termOne = keysrt(searches[searchone].stateCounts, 'state');
+  var termTwo = keysrt(searches[searchtwo].stateCounts, 'state');
+  $.each( termOne, function( i, stateitem ) {
+    //make our first proportion negative, then add them together to find the midpoint
+    oneprop = stateitem.proportion - (stateitem.proportion*2);
+    comparison = oneprop + termTwo[i].proportion;
+    tipText = "<span style='color:red; font-weight: bold;'>" + searches[searchone].term + "</span> represents " + Math.round10((stateitem.proportion*100), -2) + "% of US total</br>" +
+              "<span style='color:blue; font-weight: bold;'>" + searches[searchtwo].term + "</span>  represents " + Math.round10((termTwo[i].proportion*100), -2) + "% of US total";
+    termCompArray.push([stateitem.state, comparison, tipText]);
+    });
+  console.log(termCompArray);
+  $("#chart_div").before('<h3>Proportion of "' + searches[searchone].term + '" vs "' + searches[searchtwo].term + '" for each State</h3>')
+  var data = google.visualization.arrayToDataTable(termCompArray);
+  data.setColumnProperty(2, 'role', 'tooltip');
+  data.setColumnProperty(2, 'html', true);
+  var options = {
+                     resolution: 'provinces',
+                     region: 'US',
+                     tooltip: {isHtml: true},
+                     width: mainwidth,
+                     //colorAxis: {minValue: -.055, maxValue: .4, colors: ['#440D57', '#2092BC','#FDE725']},
+                     colorAxis: {colors: ['red', 'blue']}
+                    };
+  var chart = new google.visualization.GeoChart( document.getElementById('chart_div') );
+  chart.draw(data, options);
+}
+
+function keysrt(arr, key, reverse) {
+    var sortOrder = 1;
+    if(reverse){
+        sortOrder = -1;
+    }
+    return arr.sort(function(a, b) {
+        var x = a[key],
+            y = b[key];
+        return sortOrder * ((x < y) ? -1 : ((x > y) ? 1 : 0));
+    });
+}
+
+
+
+})
+
+();
+
+</script>
+</body>
+</html>
