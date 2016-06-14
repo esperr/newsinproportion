@@ -10,17 +10,32 @@ body {
     html, body {
     height: 100%;
     }
+
     .wrapper {
     min-height: 100%;
     height: auto !important;
     height: 100%;
     margin: 0 auto -4em;
     }
+
     .footer, .push {
     height: 4em;
     clear: both;
     }
 
+.footer {
+    border-top:  2px solid grey;
+    padding-top: .8em;
+    font-size: 80%;
+}
+
+h2, h4 {margin-bottom: .5em;
+    margin-top: 1em;
+  }
+
+p {
+  margin-bottom: .5em;
+  }
 
 .hideme { opacity: 0.2; }
 
@@ -32,6 +47,25 @@ body {
   padding-bottom: .5em;
   position: relative;
 
+  }
+
+  #header a:link, #header a:visited {
+      background-color: #13971B;
+      font-size: 75%;
+      color: white;
+      padding: .5em;
+      text-align: center;
+      text-decoration: none;
+    border-radius: 10px;
+    position: absolute;
+    bottom: 15%;
+    right: 0em;
+  font-weight: bold;}
+
+  #header a:hover, #header a:active {
+    background-color: white;
+    color: #13971B;
+    border: 1px solid #13971B;
   }
 
 #header p {
@@ -48,14 +82,18 @@ body {
   border: 1px solid black;
   border-radius: 10px;
   padding: 1em;
-  box-shadow: 5px 5px 5px #888888;
+  /*box-shadow: 5px 5px 5px #888888;*/
+  -webkit-box-shadow: 5px 5px 9px 0px rgba(117,117,117,1);
+-moz-box-shadow: 5px 5px 9px 0px rgba(117,117,117,1);
+box-shadow: 5px 5px 9px 0px rgba(117,117,117,1);
   margin-bottom: 1em;
 }
 
-#search span { font-size: 150%;
-           position: absolute;
-           left: 2em;
+#search .formpart {
+  padding: .2em;
+  font-size: 75%;
             }
+
 #main {
   width: 80%;
   float: left;
@@ -64,13 +102,15 @@ body {
 #main p {
 margin-top: 1em;
 }
+
 .searches {
   width: 10%;
   border: 1px solid black;
   float: right;
-  padding: 1em 2em 2em;
-  }
+  padding: 1em 1.5em 1.5em;
+  border-radius: 10px;
 
+  }
 
   .searches dt {
     padding-bottom: .2em;
@@ -80,20 +120,18 @@ margin-top: 1em;
     padding-bottom: .5em;
   }
 
-  .splash {
-    width: 40%;
-    background-color: Cornsilk;
-    border: 1px solid black;
-    position: absolute;
-    right: 10%;
-    padding: 1em 2em 2em;
+  .searches h3 {
+    margin-bottom: .5em;
   }
 
   .showsearches {
     font-size: 75%;
     padding-bottom: .5em;
   }
-  .toggleview { float: right; }
+  .toggleview {
+    float: right;
+    right: 5%; 
+          }
 
  #results {
     position: relative;
@@ -107,18 +145,26 @@ margin-top: 1em;
 #loading p {
 text-align: center;
 font-size: 150%;
+color: DarkGray;
 }
 
-.about {
-  position: absolute;
-  bottom: 20%;
-  right: 20%;
-  font-size: 75%;
-      border-radius: 25px;
-    border: 2px solid grey;
-  padding:.5em
+.baseline {
+font-weight: bold;
+font-size: 150%;
+color: grey;
 }
 
 #slider {
     margin: 1em;
+}
+
+#explaining {
+  width: 70%;
+  float: left;
+}
+
+#credits {
+  width: 20%;
+  float: right;
+  padding: 1em 2em 2em;
 }

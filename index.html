@@ -26,12 +26,11 @@
 
 <div id="main">
 <form id="search">
-    <input id="newssearch" type="text" size="35" />
-    <input id="runsearch" type="button" value="Search by state" /><br />
-    Chart type: <input type="radio" name="charttype" value="proportional" checked>Proportional <input type="radio" name="charttype" value="counts">Raw counts
-
-    <br />Years: <input id="startyear" type="text" size="4" value="1836" /> to <input id="endyear" type="text" size="4"  value="1922" />
-    <a href="#!" class="changeyear">(change years)</a>
+    <div class="formpart"><input id="newssearch" type="text" size="35" />
+    <input id="runsearch" type="button" value="Search by state" /></div>
+    <div class="formpart">Chart type: <input type="radio" name="charttype" value="proportional" checked>Proportional <input type="radio" name="charttype" value="counts">Raw counts</div>
+    <div class="formpart">Years: <input id="startyear" type="text" size="4" value="1836" disabled /> to <input id="endyear" type="text" size="4"  value="1922" disabled />
+    <a href="#!" class="changeyear">(change years)</a></div>
     <div id="slider"></div>
 </form>
 
@@ -44,10 +43,10 @@
     Built on top of the rich data provided by <a href="http://chroniclingamerica.loc.gov/">Chronicling America</a>, this tool maps your search and shows not only many times it appears in
     the digitized newpaper pages of a given state, but also how great a <em>proportion</em> of a state's news that number represents.</p>
 
-  <p>The geographical concentration of some searches, such as "lutefisk" or "tarpon", probably won't suprise you. Others (such as "anthrax") just might.</p>
+  <p>The geographical concentration of some searches, such as "lutefisk" or "tarpon", probably won't suprise you. Others, such as "anthrax", just might.</p>
 
   <p>Once you have performed a couple of searches, you can toggle back and forth to compare them.
-    You can even directly compare any two terms.</p>
+    You can even directly compare any two terms to see which is more prevalent in each state.</p>
 </div>
 </div>
 <br /><br />
@@ -57,7 +56,6 @@
   <p>Enter your Chronicling America search...</p>
 </div>
 
-<div id="stateresults"></div>
 <div class="push"></div>
 </div>
 
@@ -97,7 +95,8 @@ var compOptions = {
                   width: mainwidth,
 
                    //colorAxis: {minValue: -.055, maxValue: .4, colors: ['#440D57', '#2092BC','#FDE725']},
-                   colorAxis: {colors: ['#440D57', '#2092BC','#FDE725']}
+                   //colorAxis: {colors: ['#440D57', '#2092BC','#FDE725']}
+                   colorAxis: {colors: ['#D3FDEC', '#FDFBB7', '#FFCA8B', '#FF7761', '#EC4D94']}
                   };
 
 
@@ -134,6 +133,8 @@ $(".changeyear").click(function(){
   $( "#runsearch" ).remove();
 
   $( "#newssearch" ).prop( "disabled", true );
+  $( "#runsearch" ).prop( "disabled", true );
+
   $( "#slider" ).slider({
     orientation: "horizontal",
     min: 1836,
@@ -203,21 +204,26 @@ $( "#past" ).on( "change", "input[name='term']:checked", function() {
 
 function showWait() {
   $( "#newssearch" ).prop( "disabled", true );
+  $( "#runsearch" ).prop( "disabled", true );
   $( "#newssearch" ).addClass( "hideme" );
   $( "#runsearch" ).addClass( "hideme" );
   if (searches.length > 0) {
     $("#results").append('<div id="loading"><p>Searching -- please wait....</p><img src="loading-bars.svg" width="' + mainwidth*.50 + '"></div>');
     $( "#chart_div" ).addClass( "hideme" );
+  } else {
+    $( "#runsearch" ).after( '<span class="baseline">&nbsp;&nbsp;Loading baseline...</span>' );
   }
   //$( "#past" ).addClass( "hideme" );
   }
 
 function showDone() {
   $( "#newssearch" ).prop( "disabled", false );
+  $( "#runsearch" ).prop( "disabled", false );
   $( "#newssearch" ).removeClass( "hideme" );
   $( "#runsearch" ).removeClass( "hideme" );
   $( "#results" ).removeClass( "hideme" );
   $("#results #loading").remove();
+  $("#search .baseline").remove();
 
   //$( "#past" ).removeClass( "hideme" );
   }
@@ -274,10 +280,6 @@ function dosearch(term) {
     };
     searches.push(search);
     if (searches.length > 1) {
-    //  if ($( "#past" ).hasClass( "splash" )) {
-    //    $( "#past" ).removeClass( "splash" );
-    //    $( "#past" ).addClass( "searches" );
-    //  }
       showSearches();
     }
     getStateCounts(term);
@@ -340,44 +342,7 @@ function csearch(term, state) {
      });
 }
 
-function stateresults(term, state) {
-  $.ajax({
-	url: 'http://chroniclingamerica.loc.gov/search/pages/results/list/',
-  jsonp: "callback",
-  dataType: "jsonp",
-  error: function () { alert("Oops, something went wrong. Please try again!")},
-	data: {
-	rows: '1',
-  searchType: 'basic',
-	state: state,
-	proxtext: term,
-	page: '1',
-	format: 'json'
- },
-  success:  function( data ) {
-    count = data.totalItems;
-    myIndex = searches.length - 1;
-    mySearch = searches[myIndex];
-    total = mySearch.count;
-    proportion = count / total;
-    stateCount = {
-      'state': state,
-      'count': count,
-      'proportion': proportion
-    };
-    mySearch.stateCounts.push(stateCount);
 
-    if (mySearch.stateCounts.length == states.length) {
-
-      if ($( "input:radio[name=charttype]:checked" ).val() == "proportional") {
-        displayHandler('proportional');
-      } else {
-        displayHandler('counts');
-      }
-    }
-  }
-     });
-}
 
 //display charts by count and proportion
 function displayHandler(charttype, searchIndex) {
