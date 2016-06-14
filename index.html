@@ -1,9 +1,10 @@
 <html>
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
-  <title>Proportional Maps!</title>
+  <title>News in Proportion</title>
   <link rel="stylesheet" type="text/css"
       href="https://fonts.googleapis.com/css?family=IM Fell DW Pica">
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
   <link href="mystyle.css" rel="stylesheet" type="text/css">
 
 </head>
@@ -11,6 +12,7 @@
 
 <body>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+<script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript" src="deciround.js"></script>
 
@@ -19,27 +21,42 @@
 <div id="header">
 <h1>News in Proportion</h1>
 <p>Proportional maps of Chronicling America</p>
+<p class="about"><a href="about.html">About News in Proportion</a></p>
 </div>
 
 <div id="main">
-<p>Enter your Chronicling America search below:</p>
 <form id="search">
-    <input id="newssearch" type="text" />
-    <input id="runsearch" type="button" value="Search by state" />&nbsp;&nbsp;
+    <input id="newssearch" type="text" size="35" />
+    <input id="runsearch" type="button" value="Search by state" /><br />
     Chart type: <input type="radio" name="charttype" value="proportional" checked>Proportional <input type="radio" name="charttype" value="counts">Raw counts
+
+    <br />Years: <input id="startyear" type="text" size="4" value="1836" /> to <input id="endyear" type="text" size="4"  value="1922" />
+    <a href="#!" class="changeyear">(change years)</a>
+    <div id="slider"></div>
 </form>
 
 
 <div id="results">
-  <img src='usmap.png'>
+  <!--<img src='usmap.png'>-->
+  <div id="chart_div">
+  <h3>Welcome to News in Proportion</h3>
+  <p>News in Proportion is an experiment in data visualization that alows you to explore just what made news in the past in different parts of the country.
+    Built on top of the rich data provided by <a href="http://chroniclingamerica.loc.gov/">Chronicling America</a>, this tool maps your search and shows not only many times it appears in
+    the digitized newpaper pages of a given state, but also how great a <em>proportion</em> of a state's news that number represents.</p>
+
+  <p>The geographical concentration of some searches, such as "lutefisk" or "tarpon", probably won't suprise you. Others (such as "anthrax") just might.</p>
+
+  <p>Once you have performed a couple of searches, you can toggle back and forth to compare them.
+    You can even directly compare any two terms.</p>
+</div>
 </div>
 <br /><br />
 </div>
 
-<div id="past">
-  <h4>Searches</h4>
-  <dl></dl>
+<div id="past" class="searches">
+  <p>Enter your Chronicling America search...</p>
 </div>
+
 <div id="stateresults"></div>
 <div class="push"></div>
 </div>
@@ -90,6 +107,7 @@ dosearch(term);
 
 
 
+
 //Actions and display bits
 $("#runsearch").click(function(){
     handlesearch();
@@ -109,6 +127,27 @@ function handlesearch() {
   $("#newssearch").val("");
   document.getElementById('newssearch').focus();
   }
+
+$(".changeyear").click(function(){
+  $( ".changeyear" ).remove();
+  $( "#newssearch" ).remove();
+  $( "#runsearch" ).remove();
+
+  $( "#newssearch" ).prop( "disabled", true );
+  $( "#slider" ).slider({
+    orientation: "horizontal",
+    min: 1836,
+    max: 1922,
+    range: true,
+    values: [ $("#startyear").val(), $("#endyear").val() ],
+    change: function( event, ui ) {
+      console.log($( "#slider" ).slider( "values" ));
+      $( "#startyear" ).val( $( "#slider" ).slider( "values", 0 ) );
+      $( "#endyear" ).val( $( "#slider" ).slider( "values", 1 ) );
+      }
+    });
+    $( "#search" ).append('<a href="#!" class="reload">Restart with new date range</a>');
+  });
 
   //We have to use event delegation to select the things added after page load...
 $( "#results" ).on( "click", "#showcounts", function() {
@@ -149,6 +188,10 @@ $( "#past" ).on( "click", ".showsearches", function() {
     showSearches();
     });
 
+$( "#search" ).on( "click", ".reload", function() {
+    location.reload();
+    });
+
 //they can only select two terms to compare....
 $( "#past" ).on( "change", "input[name='term']:checked", function() {
   var cnt = $("input[name='term']:checked").length;
@@ -162,9 +205,10 @@ function showWait() {
   $( "#newssearch" ).prop( "disabled", true );
   $( "#newssearch" ).addClass( "hideme" );
   $( "#runsearch" ).addClass( "hideme" );
-  $( "#results" ).addClass( "hideme" );
-  $("#results").append('<img id="loading" src="loading-bars.svg" width="' + mainwidth*.50 + '">');
-
+  if (searches.length > 0) {
+    $("#results").append('<div id="loading"><p>Searching -- please wait....</p><img src="loading-bars.svg" width="' + mainwidth*.50 + '"></div>');
+    $( "#chart_div" ).addClass( "hideme" );
+  }
   //$( "#past" ).addClass( "hideme" );
   }
 
@@ -180,6 +224,7 @@ function showDone() {
 
 function showSearches() {
     $( "#past" ).empty();
+    $( "#past" ).append("<h3>Searches</h3>");
     $( "#past" ).append("<dl>");
     for (var i = 1; i < searches.length; i++) {
       $("#past dl").append('<dt class="pastsearch"><a href="#!">' + searches[i].term + "</a></dt>");
@@ -190,13 +235,13 @@ function showSearches() {
       }
     }
 
-function newspapers () {
-    alert("got them!");
 
-}
 //search a term and set up for searching by State
 function dosearch(term) {
   showWait();
+  startyear = $("#startyear").val();
+  endyear = $("#endyear").val();
+  //alert(endyear);
   stateClone = states.slice(0);
   while (stateCounts.length) { stateCounts.pop(); }
   $.ajax({
@@ -206,16 +251,20 @@ function dosearch(term) {
   error: function () { alert("Oops, something went wrong. Please try again!")},
   data: {
   rows: '1',
+  date1: startyear,
+  date2: endyear,
   searchType: 'basic',
   proxtext: term,
+  dateFilterType: 'yearRange',
   page: '1',
   format: 'json'
  },
   success:  function( data ) {
-    console.log(data);
     // check for null result
-    if (data.totalItems === '0') {
-      alert ('Nothing found for "' + term + '"');
+    console.log(data.totalItems);
+
+    if (data.totalItems == '0') {
+      alert ('Nothing found for "' + term + '". Please try another search');
       return;
     }
     search = {
@@ -225,6 +274,10 @@ function dosearch(term) {
     };
     searches.push(search);
     if (searches.length > 1) {
+    //  if ($( "#past" ).hasClass( "splash" )) {
+    //    $( "#past" ).removeClass( "splash" );
+    //    $( "#past" ).addClass( "searches" );
+    //  }
       showSearches();
     }
     getStateCounts(term);
@@ -244,6 +297,8 @@ function getStateCounts(term) {
 }
 
 function csearch(term, state) {
+  startyear = $("#startyear").val();
+  endyear = $("#endyear").val();
   $.ajax({
 	url: 'http://chroniclingamerica.loc.gov/search/pages/results/list/',
   jsonp: "callback",
@@ -251,9 +306,12 @@ function csearch(term, state) {
   error: function () { alert("Oops, something went wrong. Please try again!")},
 	data: {
 	rows: '1',
+  date1: startyear,
+  date2: endyear,
   searchType: 'basic',
 	state: state,
 	proxtext: term,
+  dateFilterType: 'yearRange',
 	page: '1',
 	format: 'json'
  },
@@ -362,6 +420,9 @@ function displayHandler(charttype, searchIndex) {
     var options = countOptions;
     $("#chart_div").after('<input id="showprops" class="toggleview" type="button" name="' + searchIndex + '" value="Show proportions" />')
   }
+  if ($("#startyear").val() != "1836" || $("#endyear").val() != "1922" ) {
+    $("#results h3").append(' (' + $("#startyear").val() + ' to ' + $("#endyear").val() + ')');
+    }
   var chart = new google.visualization.GeoChart( document.getElementById('chart_div') );
 
   //Here comes the clicky bit...
@@ -370,7 +431,7 @@ function displayHandler(charttype, searchIndex) {
   if (selectedItem) {
     var selectstate = data.getValue(selectedItem.row, 0);
     //alert('The user selected ' + mySearch.term + ' in the context of ' + selectstate);
-    var resultsURL = 'http://chroniclingamerica.loc.gov/search/pages/results/?andtext=' + mySearch.term + '&state=' + selectstate;
+    var resultsURL = 'http://chroniclingamerica.loc.gov/search/pages/results/?andtext=' + mySearch.term + '&state=' + selectstate + '&date1=' + $("#startyear").val() + 'date2=' + $("#endyear").val() + '&dateFilterType=yearRange';
     window.open(resultsURL,'_blank');
   }
 }
@@ -395,7 +456,7 @@ function compareTerms(searchone, searchtwo) {
     termCompArray.push([stateitem.state, comparison, tipText]);
     });
   console.log(termCompArray);
-  $("#chart_div").before('<h3>Proportion of "' + searches[searchone].term + '" vs "' + searches[searchtwo].term + '" for each State</h3>')
+  $("#chart_div").before('<h3>Proportion of "<span style="color:red">' + searches[searchone].term + '</span>" vs "<span style="color:blue">' + searches[searchtwo].term + '</span>" for each State</h3>')
   var data = google.visualization.arrayToDataTable(termCompArray);
   data.setColumnProperty(2, 'role', 'tooltip');
   data.setColumnProperty(2, 'html', true);
