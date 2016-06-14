@@ -254,7 +254,10 @@ function dosearch(term) {
   url: 'http://chroniclingamerica.loc.gov/search/pages/results/list/',
   jsonp: "callback",
   dataType: "jsonp",
-  error: function () { alert("Oops, something went wrong. Please try again!")},
+  error: function () {
+    alert("Oops, something went wrong. Please try again!")
+    return;
+  },
   data: {
   rows: '1',
   date1: startyear,
@@ -305,7 +308,10 @@ function csearch(term, state) {
 	url: 'http://chroniclingamerica.loc.gov/search/pages/results/list/',
   jsonp: "callback",
   dataType: "jsonp",
-  error: function () { alert("Oops, something went wrong. Please try again!")},
+  error: function () {
+    alert("Oops, something went wrong. Please try again!")
+    return;
+  },
 	data: {
 	rows: '1',
   date1: startyear,
