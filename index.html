@@ -94,6 +94,20 @@
 var mainwidth = $( "#main" ).width();
 //$("#results img").attr("width", mainwidth);
 
+start = getParameterByName("start");
+if (start !== null) {
+    $("#startyear").val(start);
+}
+
+end = getParameterByName("end");
+if (end !== null) {
+    $("#endyear").val(end);
+}
+
+//console.log(getParameterByName("start"));
+var startyear = $("#startyear").val();
+var endyear = $("#endyear").val();
+
 var searches = [];
 var stateCounts = [];
 var states = ["Alabama", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maryland",
@@ -211,6 +225,10 @@ $( "#past" ).on( "click", ".showsearches", function() {
     });
 
 $( "#search" ).on( "click", ".reload", function() {
+    //location.reload();
+    myAddy = location.pathname;
+    myAddy = myAddy + '?start=' + $("#startyear").val() + '&end=' + $("#endyear").val();
+    history.pushState(null, null, myAddy);
     location.reload();
     });
 
@@ -283,8 +301,8 @@ function showSearches() {
 //search a term and set up for searching by State
 function dosearch(term) {
   showWait();
-  startyear = $("#startyear").val();
-  endyear = $("#endyear").val();
+  //startyear = $("#startyear").val();
+  //endyear = $("#endyear").val();
   //alert(endyear);
   stateClone = states.slice(0);
   while (stateCounts.length) { stateCounts.pop(); }
@@ -338,8 +356,8 @@ function getStateCounts(term) {
 }
 
 function csearch(term, state) {
-  startyear = $("#startyear").val();
-  endyear = $("#endyear").val();
+  //startyear = $("#startyear").val();
+  //endyear = $("#endyear").val();
   $.ajax({
 	url: 'http://chroniclingamerica.loc.gov/search/pages/results/list/',
   jsonp: "callback",
@@ -439,7 +457,8 @@ function displayHandler(charttype, searchIndex) {
   if (selectedItem) {
     var selectstate = data.getValue(selectedItem.row, 0);
     //alert('The user selected ' + mySearch.term + ' in the context of ' + selectstate);
-    var resultsURL = 'http://chroniclingamerica.loc.gov/search/pages/results/?andtext=' + mySearch.term + '&state=' + selectstate + '&date1=' + $("#startyear").val() + 'date2=' + $("#endyear").val() + '&dateFilterType=yearRange';
+    var resultsURL = 'http://chroniclingamerica.loc.gov/search/pages/results/';
+    resultsURL = resultsURL + '?state=' + selectstate + '&dateFilterType=yearRange&date1=' + $("#startyear").val() + '&date2=' + $("#endyear").val() + '&andtext=' + mySearch.term + '&searchType=advanced';
     window.open(resultsURL,'_blank');
   }
 }
@@ -539,6 +558,13 @@ function getprint(dataURL,type) {
       $( "#results" ).append('<a href="#!" class="printMe">Printable version</a>');
   }
 }
+
+//freely adopted from http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
+function getParameterByName(name) {
+    var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
+
 
 function keysrt(arr, key, reverse) {
     var sortOrder = 1;
