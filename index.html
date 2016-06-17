@@ -45,11 +45,15 @@
     <div id="slider"></div>
 </form>
 
+<canvas id="myCanvas2" width="900" height="550" style="display: none;">
+Your browser does not support the HTML5 canvas tag.</canvas>
+
+<div id='png'></div>
 
 <div id="results">
   <!--<img src='usmap.png'>-->
   <div id="chart_div">
-  <h3>Welcome to News in Proportion</h3>
+  <h2>Welcome to News in Proportion</h2>
   <p>News in Proportion is an experiment in data visualization that allows you to explore just what made news in the past in different parts of the country.
     Built on top of the rich data provided by <a href="http://chroniclingamerica.loc.gov/" target="_blank">Chronicling America</a>, this tool maps your search and shows not only many times it appears in
     the digitized newspaper pages of a given state, but also how great a <em>proportion</em> of a state's news that number represents.</p>
@@ -83,7 +87,7 @@
 (function() {
 
 var mainwidth = $( "#main" ).width();
-$("#results img").attr("width", mainwidth);
+//$("#results img").attr("width", mainwidth);
 
 var searches = [];
 var stateCounts = [];
@@ -96,14 +100,15 @@ google.charts.load('current', {'packages':['geochart']});
 
 var countOptions =  { resolution: 'provinces',
                      tooltip: {isHtml: true},
-                     width: mainwidth,
+                     //width: mainwidth,
+                     //height: mainwidth/1.8,
                    region: 'US'};
 
 var compOptions = {
                    resolution: 'provinces',
                    region: 'US',
                   tooltip: {isHtml: true},
-                  width: mainwidth,
+                  //width: mainwidth,
 
                    //colorAxis: {minValue: -.055, maxValue: .4, colors: ['#440D57', '#2092BC','#FDE725']},
                    //colorAxis: {colors: ['#440D57', '#2092BC','#FDE725']}
@@ -376,7 +381,7 @@ function displayHandler(charttype, searchIndex) {
   } else {
     $( "#results" ).empty();
   }
-  $( "#results" ).append( '<div id="chart_div" style="width: 900px; height: 500px;">' );
+  $( "#results" ).append( '<div id="chart_div">' );
   var states = keysrt(mySearch.stateCounts, 'state');
   var basestates = keysrt(searches[0].stateCounts, 'state');
   if (charttype == "proportional") {
@@ -420,13 +425,18 @@ function displayHandler(charttype, searchIndex) {
 }
 
   google.visualization.events.addListener(chart, 'select', selectHandler);
+  google.visualization.events.addListener(chart, 'ready', function () {
+    dataURL = chart.getImageURI();
+    console.log(dataURL);
+    getprint(dataURL);
+  });
   chart.draw(data, options);
 }
 
 //Prepare and display term comparison chart
 function compareTerms(searchone, searchtwo) {
   $( "#results" ).empty();
-  $( "#results" ).append( '<div id="chart_div" style="width: 900px; height: 500px;">' );
+  $( "#results" ).append( '<div id="chart_div">' );
   var termCompArray =  [['State', 'Term Comparison', 'Tooltip']];
   var termOne = keysrt(searches[searchone].stateCounts, 'state');
   var termTwo = keysrt(searches[searchtwo].stateCounts, 'state');
@@ -439,7 +449,7 @@ function compareTerms(searchone, searchtwo) {
     termCompArray.push([stateitem.state, comparison, tipText]);
     });
   console.log(termCompArray);
-  $("#chart_div").before('<h3>Proportion of "<span style="color:red">' + searches[searchone].term + '</span>" vs "<span style="color:blue">' + searches[searchtwo].term + '</span>" for each State</h3>')
+  $("#chart_div").before('<h3>Proportion of <span style="color:red">"' + searches[searchone].term + '"</span> vs <span style="color:blue">"' + searches[searchtwo].term + '"</span> for each State</h3>')
   var data = google.visualization.arrayToDataTable(termCompArray);
   data.setColumnProperty(2, 'role', 'tooltip');
   data.setColumnProperty(2, 'html', true);
@@ -447,12 +457,67 @@ function compareTerms(searchone, searchtwo) {
                      resolution: 'provinces',
                      region: 'US',
                      tooltip: {isHtml: true},
-                     width: mainwidth,
+                     //width: mainwidth,
                      //colorAxis: {minValue: -.055, maxValue: .4, colors: ['#440D57', '#2092BC','#FDE725']},
                      colorAxis: {colors: ['red', 'blue']}
                     };
   var chart = new google.visualization.GeoChart( document.getElementById('chart_div') );
+  google.visualization.events.addListener(chart, 'ready', function () {
+    dataURL = chart.getImageURI();
+    console.log(dataURL);
+    getprint(dataURL,"compare");
+  });
   chart.draw(data, options);
+}
+
+function getprint(dataURL,type) {
+  var c2 = document.getElementById("myCanvas2");
+  var ctx2 = c2.getContext("2d");
+  ctx2.clearRect(0, 0, c2.width, c2.height);
+  var background = new Image();
+  background.src = dataURL;
+
+  background.onload = function(){
+      ctx2.beginPath();
+      ctx2.rect(0, 0, 900, 550);
+      ctx2.fillStyle = "white";
+      ctx2.fill();
+
+      ctx2.drawImage(background,5,40,900,500);
+      ctx2.fillStyle = "black";
+      ctx2.font = '25px "IM Fell DW Pica"';
+      titletext = $( "#results h3" ).text()
+      if (type == "compare") {
+        titleparts = titletext.split(" ");
+        pt1 = titleparts.slice(0, 2).join(" ");
+        ctx2.fillText(pt1,35,50);
+        offset = 41 + ctx2.measureText(pt1).width;
+        pt2 = titleparts.slice(2, 3);
+        ctx2.fillStyle = "red";
+        ctx2.fillText(pt2,offset,50);
+        offset = offset + ctx2.measureText(pt2).width + 6;
+        pt3 = titleparts.slice(3, 4);
+        ctx2.fillStyle = "black";
+        ctx2.fillText(pt3,offset,50);
+        offset = offset + ctx2.measureText(pt3).width + 6;
+        pt4 = titleparts.slice(4, 5);
+        ctx2.fillStyle = "blue";
+        ctx2.fillText(pt4,offset,50);
+        offset = offset + ctx2.measureText(pt4).width + 6;
+        pt5 = titleparts.slice(5).join(" ");
+        ctx2.fillStyle = "black";
+        ctx2.fillText(pt5,offset,50);
+      } else {
+        ctx2.fillText(titletext,35,50);
+      }
+      ctx2.font = '15px "IM Fell DW Pica"';
+      ctx2.fillText("Made with News in Proportion",600,500);
+      ctx2.fillText("http://esperr.github.io/newsinproportion",600,520)
+      var newdataURL = c2.toDataURL();
+      console.log(newdataURL);
+      $( "#results" ).append('<a href="' + newdataURL + '">Printable version</a>');
+      //document.getElementById('png').outerHTML = '<a href="' + newdataURL + '">Printable version</a>';
+  }
 }
 
 function keysrt(arr, key, reverse) {

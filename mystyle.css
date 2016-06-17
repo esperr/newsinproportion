@@ -83,9 +83,9 @@ p {
   border-radius: 10px;
   padding: 1em;
   /*box-shadow: 5px 5px 5px #888888;*/
-  -webkit-box-shadow: 5px 5px 9px 0px rgba(117,117,117,1);
--moz-box-shadow: 5px 5px 9px 0px rgba(117,117,117,1);
-box-shadow: 5px 5px 9px 0px rgba(117,117,117,1);
+  -webkit-box-shadow: 5px 5px 9px 0px gainsboro;
+-moz-box-shadow: 5px 5px 9px 0px gainsboro;
+box-shadow: 5px 5px 9px 0px gainsboro;
   margin-bottom: 1em;
 }
 
@@ -130,12 +130,21 @@ margin-top: 1em;
   }
   .toggleview {
     float: right;
-    right: 5%; 
+    right: 5%;
           }
 
  #results {
     position: relative;
  }
+
+ #results h3 {
+   font-family: "IM Fell DW Pica", Serif;
+   z-index: 2;
+   font-size: 157%;
+   position: absolute;
+   top: .7em;
+ }
+
   #loading {
   position: absolute;
   top: 25%;
