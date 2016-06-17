@@ -45,8 +45,13 @@
     <div id="slider"></div>
 </form>
 
-<canvas id="myCanvas2" width="900" height="550" style="display: none;">
-Your browser does not support the HTML5 canvas tag.</canvas>
+<div id="printable">
+  <div id="printable-stuff">
+  <span class="close">×</span>
+  <canvas id="myCanvas2" width="900" height="550">
+    Your browser does not support the HTML5 canvas tag.</canvas>
+  </div>
+</div>
 
 <div id='png'></div>
 
@@ -208,6 +213,21 @@ $( "#past" ).on( "click", ".showsearches", function() {
 $( "#search" ).on( "click", ".reload", function() {
     location.reload();
     });
+
+$( "#main" ).on( "click", ".printMe", function() {
+    $("#printable").css("display", "block");
+    });
+
+$(".close").click(function(){
+  $("#printable").css("display", "none");
+      });
+
+$(document).click(function(event) {
+   var closeit = document.getElementById('printable');
+   if (event.target == closeit) {
+      $("#printable").css("display", "none");
+      }
+      });
 
 //they can only select two terms to compare....
 $( "#past" ).on( "change", "input[name='term']:checked", function() {
@@ -483,7 +503,7 @@ function getprint(dataURL,type) {
       ctx2.fillStyle = "white";
       ctx2.fill();
 
-      ctx2.drawImage(background,5,40,900,500);
+      ctx2.drawImage(background,5,40,825,500);
       ctx2.fillStyle = "black";
       ctx2.font = '25px "IM Fell DW Pica"';
       titletext = $( "#results h3" ).text()
@@ -515,8 +535,8 @@ function getprint(dataURL,type) {
       ctx2.fillText("http://esperr.github.io/newsinproportion",600,520)
       var newdataURL = c2.toDataURL();
       console.log(newdataURL);
-      $( "#results" ).append('<a href="' + newdataURL + '">Printable version</a>');
-      //document.getElementById('png').outerHTML = '<a href="' + newdataURL + '">Printable version</a>';
+      //$( "#results" ).append('<a href="' + newdataURL + '">Printable version</a>');
+      $( "#results" ).append('<a href="#!" class="printMe">Printable version</a>');
   }
 }
 
