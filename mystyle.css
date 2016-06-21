@@ -3,25 +3,26 @@ body {
   margin-left: 4em;
   margin-right: 4em;
   }
-
-    * {
+/* bare-bones two-column layout */
+* {
     margin: 0;
-    }
-    html, body {
-    height: 100%;
-    }
+  }
 
-    .wrapper {
+html, body {
+    height: 100%;
+  }
+
+.wrapper {
     min-height: 100%;
     height: auto !important;
     height: 100%;
     margin: 0 auto -4em;
-    }
+  }
 
-    .footer, .push {
+.footer, .push {
     height: 4em;
     clear: both;
-    }
+  }
 
 .footer {
     border-top:  2px solid grey;
@@ -41,28 +42,27 @@ p {
 
 #header {
   font-size: 150%;
-       border-bottom-style: solid;
-    margin-top: 1.5em;
+  border-bottom-style: solid;
+  margin-top: 1.5em;
   margin-bottom: 1em;
   padding-bottom: .5em;
   position: relative;
-
   }
 
-  #header a:link, #header a:visited {
-      background-color: #13971B;
-      font-size: 75%;
-      color: white;
-      padding: .5em;
-      text-align: center;
-      text-decoration: none;
-    border-radius: 10px;
-    position: absolute;
-    bottom: 15%;
-    right: 0em;
+#header a:link, #header a:visited {
+  background-color: #13971B;
+  font-size: 75%;
+  color: white;
+  padding: .5em;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 10px;
+  position: absolute;
+  bottom: 15%;
+  right: 0em;
   font-weight: bold;}
 
-  #header a:hover, #header a:active {
+#header a:hover, #header a:active {
     background-color: white;
     color: #13971B;
     border: 1px solid #13971B;
@@ -73,7 +73,6 @@ p {
 }
 
 #header h1 {
-  /*font-family: "Cooper Black", Serif; */
   font-family: "IM Fell DW Pica", Serif;
 }
 
@@ -82,17 +81,17 @@ p {
   border: 1px solid black;
   border-radius: 10px;
   padding: 1em;
-  /*box-shadow: 5px 5px 5px #888888;*/
+/*box-shadow: 5px 5px 5px #888888;*/
   -webkit-box-shadow: 5px 5px 9px 0px gainsboro;
--moz-box-shadow: 5px 5px 9px 0px gainsboro;
-box-shadow: 5px 5px 9px 0px gainsboro;
+  -moz-box-shadow: 5px 5px 9px 0px gainsboro;
+  box-shadow: 5px 5px 9px 0px gainsboro;
   margin-bottom: 1em;
-}
+  }
 
 #search .formpart {
   padding: .2em;
   font-size: 75%;
-            }
+  }
 
 #main {
   width: 80%;
@@ -109,29 +108,29 @@ margin-top: 1em;
   float: right;
   padding: 1em 1.5em 1.5em;
   border-radius: 10px;
-
   }
 
-  .searches dt {
-    padding-bottom: .2em;
+.searches dt {
+  padding-bottom: .2em;
   }
 
-  .searches dl {
+.searches dl {
     padding-bottom: .5em;
   }
 
-  .searches h3 {
+.searches h3 {
     margin-bottom: .5em;
   }
 
-  .showsearches {
+.showsearches {
     font-size: 75%;
     padding-bottom: .5em;
   }
-  .toggleview {
+
+.toggleview {
     float: right;
     right: 5%;
-          }
+  }
 
  #results {
     position: relative;
@@ -145,7 +144,7 @@ margin-top: 1em;
    top: .7em;
  }
 
-  #loading {
+#loading {
   position: absolute;
   top: 25%;
   left: 25%;
@@ -164,7 +163,18 @@ color: grey;
 }
 
 #slider {
-    margin: 1em;
+  margin: 1em;
+}
+
+.ui-slider-horizontal {
+    height: 9px;
+    width: 75%;
+}
+
+.ui-slider .ui-slider-handle {
+    height: 20px;
+    width: 10px;
+    padding-left: 5px;
 }
 
 #explaining {
@@ -179,37 +189,37 @@ color: grey;
 }
 
 #printable {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 3; /* Sit on top */
-    padding-top: 100px; /* Location of the box */
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgb(0,0,0); /* Fallback color */
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 3; /* Sit on top */
+  padding-top: 100px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 }
 
 #printable-stuff {
-    background-color: #fefefe;
-    margin: auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
 }
 
 .close {
-    color: #aaaaaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
 }
 
 .close:hover,
 .close:focus {
-    color: #000;
-    text-decoration: none;
-    cursor: pointer;
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
 }

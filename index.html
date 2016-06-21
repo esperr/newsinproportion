@@ -85,15 +85,13 @@
 </div>
 
 
-
 <script>
-
 
 (function() {
 
 var mainwidth = $( "#main" ).width();
-//$("#results img").attr("width", mainwidth);
 
+//check to see if we have a custom date range in the querystring...
 start = getParameterByName("start");
 if (start !== null) {
     $("#startyear").val(start);
@@ -104,23 +102,20 @@ if (end !== null) {
     $("#endyear").val(end);
 }
 
-//console.log(getParameterByName("start"));
 var startyear = $("#startyear").val();
 var endyear = $("#endyear").val();
 
 var searches = [];
 var stateCounts = [];
+//This will need to be edited by hand when new states are added
 var states = ["Alabama", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maryland",
              "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico",
              "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia"]
-//var newspapers = [];
 
 google.charts.load('current', {'packages':['geochart']});
 
 var countOptions =  { resolution: 'provinces',
                      tooltip: {isHtml: true},
-                     //width: mainwidth,
-                     //height: mainwidth/1.8,
                    region: 'US'};
 
 var compOptions = {
@@ -128,19 +123,14 @@ var compOptions = {
                    region: 'US',
                   tooltip: {isHtml: true},
                   //width: mainwidth,
-
                    //colorAxis: {minValue: -.055, maxValue: .4, colors: ['#440D57', '#2092BC','#FDE725']},
                    //colorAxis: {colors: ['#440D57', '#2092BC','#FDE725']}
                    colorAxis: {colors: ['#D3FDEC', '#FDFBB7', '#FFCA8B', '#FF7761', '#EC4D94']}
                   };
 
-
 //set our baseline
 term = "";
 dosearch(term);
-
-
-
 
 //Actions and display bits
 $("#runsearch").click(function(){
@@ -166,7 +156,6 @@ $(".changeyear").click(function(){
   $( ".changeyear" ).remove();
   $( "#newssearch" ).remove();
   $( "#runsearch" ).remove();
-
   $( "#newssearch" ).prop( "disabled", true );
   $( "#runsearch" ).prop( "disabled", true );
 
@@ -185,7 +174,7 @@ $(".changeyear").click(function(){
     $( "#search" ).append('<a href="#!" class="reload">Restart with new date range</a>');
   });
 
-  //We have to use event delegation to select the things added after page load...
+//We have to use event delegation to select the things added after page load...
 $( "#results" ).on( "click", "#showcounts", function() {
    var charttype = 'counts';
    var searchIndex = $(this).attr("name");
@@ -211,7 +200,6 @@ $( "#past" ).on( "click", "#showcompare", function() {
     $( "#past dl" ).append('<dt><input type="checkbox" name="term" id="' + i + '" value="' + i + '"> <label for="' + i + '">' + searches[i].term + '</label></dt>');
     }
   $("#past dl").after('<input id="compare" type="button" value="Compare" /><p style="margin-top: 1em;"><a href="#!" class="showsearches">(go back to search list)</a></p>')
-
   });
 
 $( "#past" ).on( "click", "#compare", function() {
@@ -225,13 +213,14 @@ $( "#past" ).on( "click", ".showsearches", function() {
     });
 
 $( "#search" ).on( "click", ".reload", function() {
-    //location.reload();
+    //Thanks HTML5!
     myAddy = location.pathname;
     myAddy = myAddy + '?start=' + $("#startyear").val() + '&end=' + $("#endyear").val();
     history.pushState(null, null, myAddy);
     location.reload();
     });
 
+//Printable modal stuff
 $( "#main" ).on( "click", ".printMe", function() {
     $("#printable").css("display", "block");
     });
@@ -255,11 +244,9 @@ $( "#past" ).on( "change", "input[name='term']:checked", function() {
   }
 });
 
-
 function showWait() {
   $( "#newssearch" ).prop( "disabled", true );
   $( "#runsearch" ).prop( "disabled", true );
-
   $( "#newssearch" ).addClass( "hideme" );
   $( "#runsearch" ).addClass( "hideme" );
   if (searches.length > 0) {
@@ -274,13 +261,11 @@ function showWait() {
 function showDone() {
   $( "#newssearch" ).prop( "disabled", false );
   $( "#runsearch" ).prop( "disabled", false );
-
   $( "#newssearch" ).removeClass( "hideme" );
   $( "#runsearch" ).removeClass( "hideme" );
   $( "#results" ).removeClass( "hideme" );
   $("#results #loading").remove();
   $("#search .baseline").remove();
-
   //$( "#past" ).removeClass( "hideme" );
   }
 
@@ -297,13 +282,9 @@ function showSearches() {
       }
     }
 
-
 //search a term and set up for searching by State
 function dosearch(term) {
   showWait();
-  //startyear = $("#startyear").val();
-  //endyear = $("#endyear").val();
-  //alert(endyear);
   stateClone = states.slice(0);
   while (stateCounts.length) { stateCounts.pop(); }
   $.ajax({
@@ -330,6 +311,7 @@ function dosearch(term) {
 
     if (data.totalItems == '0') {
       alert ('Nothing found for "' + term + '". Please try another search');
+      showDone();
       return;
     }
     search = {
@@ -338,7 +320,6 @@ function dosearch(term) {
       'stateCounts': []
     };
     searches.push(search);
-
     getStateCounts(term);
   }
   });
@@ -356,8 +337,6 @@ function getStateCounts(term) {
 }
 
 function csearch(term, state) {
-  //startyear = $("#startyear").val();
-  //endyear = $("#endyear").val();
   $.ajax({
 	url: 'http://chroniclingamerica.loc.gov/search/pages/results/list/',
   jsonp: "callback",
@@ -466,7 +445,6 @@ function displayHandler(charttype, searchIndex) {
   google.visualization.events.addListener(chart, 'select', selectHandler);
   google.visualization.events.addListener(chart, 'ready', function () {
     dataURL = chart.getImageURI();
-    console.log(dataURL);
     getprint(dataURL);
   });
   chart.draw(data, options);
@@ -487,7 +465,6 @@ function compareTerms(searchone, searchtwo) {
               "<span style='color:blue; font-weight: bold;'>" + searches[searchtwo].term + "</span>  represents " + Math.round10((termTwo[i].proportion*100), -2) + "% of US total";
     termCompArray.push([stateitem.state, comparison, tipText]);
     });
-  console.log(termCompArray);
   $("#chart_div").before('<h3>Proportion of <span style="color:red">"' + searches[searchone].term + '"</span> vs <span style="color:blue">"' + searches[searchtwo].term + '"</span> for each State</h3>')
   var data = google.visualization.arrayToDataTable(termCompArray);
   data.setColumnProperty(2, 'role', 'tooltip');
@@ -496,19 +473,18 @@ function compareTerms(searchone, searchtwo) {
                      resolution: 'provinces',
                      region: 'US',
                      tooltip: {isHtml: true},
-                     //width: mainwidth,
-                     //colorAxis: {minValue: -.055, maxValue: .4, colors: ['#440D57', '#2092BC','#FDE725']},
                      colorAxis: {colors: ['red', 'blue']}
                     };
   var chart = new google.visualization.GeoChart( document.getElementById('chart_div') );
   google.visualization.events.addListener(chart, 'ready', function () {
     dataURL = chart.getImageURI();
-    console.log(dataURL);
     getprint(dataURL,"compare");
   });
   chart.draw(data, options);
 }
 
+//Google doesn't support titles for GeoCharts, so we draw the chart to a hidden camvas, overlay our text
+//and use canvas-to-data-uri to send *that* to a modal
 function getprint(dataURL,type) {
   var c2 = document.getElementById("myCanvas2");
   var ctx2 = c2.getContext("2d");
@@ -521,12 +497,12 @@ function getprint(dataURL,type) {
       ctx2.rect(0, 0, 900, 550);
       ctx2.fillStyle = "white";
       ctx2.fill();
-
       ctx2.drawImage(background,5,40,825,500);
       ctx2.fillStyle = "black";
       ctx2.font = '25px "IM Fell DW Pica"';
       titletext = $( "#results h3" ).text()
       if (type == "compare") {
+        //yes, we have to specially draw our reds and our blues...
         titleparts = titletext.split(" ");
         pt1 = titleparts.slice(0, 2).join(" ");
         ctx2.fillText(pt1,35,50);
@@ -553,8 +529,6 @@ function getprint(dataURL,type) {
       ctx2.fillText("Made with News in Proportion",600,500);
       ctx2.fillText("http://esperr.github.io/newsinproportion",600,520)
       var newdataURL = c2.toDataURL();
-      console.log(newdataURL);
-      //$( "#results" ).append('<a href="' + newdataURL + '">Printable version</a>');
       $( "#results" ).append('<a href="#!" class="printMe">Printable version</a>');
   }
 }
@@ -564,7 +538,6 @@ function getParameterByName(name) {
     var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
     return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
 }
-
 
 function keysrt(arr, key, reverse) {
     var sortOrder = 1;
@@ -577,9 +550,6 @@ function keysrt(arr, key, reverse) {
         return sortOrder * ((x < y) ? -1 : ((x > y) ? 1 : 0));
     });
 }
-
-
-
 })
 
 ();
