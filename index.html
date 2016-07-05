@@ -402,7 +402,7 @@ function displayHandler(charttype, searchIndex) {
   var states = keysrt(mySearch.stateCounts, 'state');
   var basestates = keysrt(searches[0].stateCounts, 'state');
   if (charttype == "proportional") {
-    $("#chart_div").before('<h3>Proportion of results of "' + mySearch.term + '" for each State</h3>')
+    $("#chart_div").before('<h3>Proportion of results for "' + mySearch.term + '" for each State</h3>')
     $.each( states, function( i, stateitem ) {
          comparison = stateitem.proportion - basestates[i].proportion;
          tipText = "<strong>" + Math.round10((stateitem.proportion*100), -2) + "%</strong> of US total</br>" + "(" + stateitem.state + " represents " + Math.round10((basestates[i].proportion*100), -2) + "% of all results)";
