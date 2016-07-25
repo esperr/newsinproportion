@@ -402,7 +402,7 @@ function displayHandler(charttype, searchIndex) {
   var states = keysrt(mySearch.stateCounts, 'state');
   var basestates = keysrt(searches[0].stateCounts, 'state');
   if (charttype == "proportional") {
-    $("#chart_div").before('<h3>Proportion of results for "' + mySearch.term + '" for each State</h3>')
+    $("#chart_div").before("<h3>Proportion of results for '" + mySearch.term + "' for each State</h3>")
     $.each( states, function( i, stateitem ) {
          comparison = stateitem.proportion - basestates[i].proportion;
          tipText = "<strong>" + Math.round10((stateitem.proportion*100), -2) + "%</strong> of US total</br>" + "(" + stateitem.state + " represents " + Math.round10((basestates[i].proportion*100), -2) + "% of all results)";
@@ -414,7 +414,7 @@ function displayHandler(charttype, searchIndex) {
     var options = compOptions;
     $("#chart_div").after('<input id="showcounts" class="toggleview" type="button" name="' + searchIndex + '"value="Show raw counts" />')
   } else {
-    $("#chart_div").before('<h3>Total count of "' + mySearch.term + '" for each State</h3>')
+    $("#chart_div").before("<h3>Total count of '" + mySearch.term + "' for each State</h3>")
     $.each( states, function( i, stateitem ) {
       tipText = "<strong>" + stateitem.count.toLocaleString() + "</strong> results <br/>(out of " + basestates[i].count.toLocaleString() + " for the state)";
          stateCountArray.push([stateitem.state, stateitem.count, tipText]);
@@ -465,7 +465,7 @@ function compareTerms(searchone, searchtwo) {
               "<span style='color:blue; font-weight: bold;'>" + searches[searchtwo].term + "</span>  represents " + Math.round10((termTwo[i].proportion*100), -2) + "% of US total";
     termCompArray.push([stateitem.state, comparison, tipText]);
     });
-  $("#chart_div").before('<h3>Proportion of <span style="color:red">"' + searches[searchone].term + '"</span> vs <span style="color:blue">"' + searches[searchtwo].term + '"</span> for each State</h3>')
+  $("#chart_div").before("<h3>Proportion of <span style='color:red'>'" + searches[searchone].term + "'</span> vs <span style='color:blue'>'" + searches[searchtwo].term + "'</span> for each State</h3>")
   var data = google.visualization.arrayToDataTable(termCompArray);
   data.setColumnProperty(2, 'role', 'tooltip');
   data.setColumnProperty(2, 'html', true);
@@ -503,25 +503,21 @@ function getprint(dataURL,type) {
       titletext = $( "#results h3" ).text()
       if (type == "compare") {
         //yes, we have to specially draw our reds and our blues...
-        titleparts = titletext.split(" ");
-        pt1 = titleparts.slice(0, 2).join(" ");
-        ctx2.fillText(pt1,35,50);
-        offset = 41 + ctx2.measureText(pt1).width;
-        pt2 = titleparts.slice(2, 3);
+        var titleparts = titletext.split("'");
+
+        ctx2.fillText(titleparts[0],35,50);
+        var offset = 40 + ctx2.measureText(titleparts[0]).width;
         ctx2.fillStyle = "red";
-        ctx2.fillText(pt2,offset,50);
-        offset = offset + ctx2.measureText(pt2).width + 6;
-        pt3 = titleparts.slice(3, 4);
+        ctx2.fillText("'" + titleparts[1] + "'",offset,50);
+        offset = offset + ctx2.measureText(titleparts[1]).width + 12;
         ctx2.fillStyle = "black";
-        ctx2.fillText(pt3,offset,50);
-        offset = offset + ctx2.measureText(pt3).width + 6;
-        pt4 = titleparts.slice(4, 5);
+        ctx2.fillText(titleparts[2],offset,50);
+        offset = offset + ctx2.measureText(titleparts[2]).width;
         ctx2.fillStyle = "blue";
-        ctx2.fillText(pt4,offset,50);
-        offset = offset + ctx2.measureText(pt4).width + 6;
-        pt5 = titleparts.slice(5).join(" ");
+        ctx2.fillText("'" + titleparts[3] + "'",offset,50);
+        offset = offset + ctx2.measureText(titleparts[3]).width + 12;
         ctx2.fillStyle = "black";
-        ctx2.fillText(pt5,offset,50);
+        ctx2.fillText(titleparts[4],offset,50);
       } else {
         ctx2.fillText(titletext,35,50);
       }
