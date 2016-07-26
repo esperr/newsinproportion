@@ -37,8 +37,14 @@
 
 <div id="main">
 <form id="search">
-    <div class="formpart"><input id="newssearch" type="text" size="35" />
-    <input id="runsearch" type="button" value="Search by state" /></div>
+    <div class="formpart">Words near each other <input id="proxsearch" type="text" size="35" />&nbsp;&nbsp;<a href="#!" class="togglemore">(more search options)</a></div>
+
+    <div id="moreoptions">
+    <div class="formpart">...with any of <input id="orsearch" type="text" size="35" /></div>
+    <div class="formpart">...with all of <input id="andsearch" type="text" size="35" /></div>
+    <div class="formpart">...containing the phrase <input id="phrasesearch" type="text" size="35" /></div>
+    </div>
+    <input id="runsearch" type="button" value="Search by state" />
     <div class="formpart">Chart type: <input type="radio" name="charttype" value="proportional" checked>Proportional <input type="radio" name="charttype" value="counts">Raw counts</div>
     <div class="formpart">Years: <input id="startyear" type="text" size="4" value="1836" disabled /> to <input id="endyear" type="text" size="4"  value="1922" disabled />
     <a href="#!" class="changeyear">(change years)</a></div>
@@ -146,17 +152,34 @@ $(document).keypress(function(e) {
 });
 
 function handlesearch() {
-  term = $("#newssearch").val();
-  dosearch(term)
-  $("#newssearch").val("");
-  document.getElementById('newssearch').focus();
+  var prox = $("#proxsearch").val();
+  var or = $("#orsearch").val();
+  var and = $("#andsearch").val();
+  var phrase = $("#phrasesearch").val();
+  dosearch(prox, or, and, phrase);
+  $("#proxsearch").val("");
+  $("#orsearch").val("");
+  $("#andsearch").val("");
+  $("#phrasesearch").val("");
+  //document.getElementById('newssearch').focus();
   }
+
+$(".togglemore").click(function(){
+  $("#moreoptions").css("display", "block");
+  $( ".togglemore" ).remove();
+  });
 
 $(".changeyear").click(function(){
   $( ".changeyear" ).remove();
-  $( "#newssearch" ).remove();
+  $( "#proxsearch" ).remove();
+  $( "#orsearch" ).remove();
+  $( "#andsearch" ).remove();
+  $( "#phrasesearch" ).remove();
   $( "#runsearch" ).remove();
-  $( "#newssearch" ).prop( "disabled", true );
+  $( "#proxsearch" ).prop( "disabled", true );
+  $( "#orsearch" ).prop( "disabled", true );
+  $( "#andsearch" ).prop( "disabled", true );
+  $( "#phrasesearch" ).prop( "disabled", true );
   $( "#runsearch" ).prop( "disabled", true );
 
   $( "#slider" ).slider({
@@ -283,7 +306,8 @@ function showSearches() {
     }
 
 //search a term and set up for searching by State
-function dosearch(term) {
+function dosearch(prox, or, and, phrase) {
+  var searchString = searchStringer(prox, or, and, phrase);
   showWait();
   stateClone = states.slice(0);
   while (stateCounts.length) { stateCounts.pop(); }
@@ -299,8 +323,10 @@ function dosearch(term) {
   rows: '1',
   date1: startyear,
   date2: endyear,
-  searchType: 'basic',
-  proxtext: term,
+  proxtext: prox,
+  ortext: or,
+  andtext: and,
+  phrasetext: phrase,
   dateFilterType: 'yearRange',
   page: '1',
   format: 'json'
@@ -310,33 +336,33 @@ function dosearch(term) {
     console.log(data.totalItems);
 
     if (data.totalItems == '0') {
-      alert ('Nothing found for "' + term + '". Please try another search');
+      alert ('Nothing found for "' + searchString + '". Please try another search');
       showDone();
       return;
     }
     search = {
-      'term': term,
+      'term': searchString,
       'count': data.totalItems,
       'stateCounts': []
     };
     searches.push(search);
-    getStateCounts(term);
+    getStateCounts(prox, or, and, phrase);
   }
   });
 }
 
 //get counts for each State
-function getStateCounts(term) {
+function getStateCounts(prox, or, and, phrase) {
   state = stateClone.pop();
-	csearch(term, state);
+	csearch(prox, or, and, phrase, state);
 	if (stateClone.length) {
-      getStateCounts(term);
+      getStateCounts(prox, or, and, phrase);
 	} else {
 		return;
 		}
 }
 
-function csearch(term, state) {
+function csearch(prox, or, and, phrase, state) {
   $.ajax({
 	url: 'http://chroniclingamerica.loc.gov/search/pages/results/list/',
   jsonp: "callback",
@@ -349,9 +375,11 @@ function csearch(term, state) {
 	rows: '1',
   date1: startyear,
   date2: endyear,
-  searchType: 'basic',
 	state: state,
-	proxtext: term,
+	proxtext: prox,
+  ortext: or,
+  andtext: and,
+  phrasetext: phrase,
   dateFilterType: 'yearRange',
 	page: '1',
 	format: 'json'
@@ -382,7 +410,30 @@ function csearch(term, state) {
      });
 }
 
-
+function searchStringer(prox, or, and, phrase) {
+  var searchStringParts = [];
+  if (prox) {
+    var proxParts = prox.split(" ");
+    proxParts = proxParts.join(" NEAR ");
+    searchStringParts.push(proxParts);
+  }
+  if (or) {
+    var orParts = or.split(" ");
+    orParts = orParts.join(" OR ");
+    searchStringParts.push(orParts);
+  }
+  if (and) {
+    var andParts = and.split(" ");
+    andParts = andParts.join(" AND ");
+    searchStringParts.push(andParts);
+  }
+  if (phrase) {
+    var phrasePart = '"' + phrase + '"';
+    searchStringParts.push(phrasePart);
+  }
+  var searchString = searchStringParts.join(" AND ");
+  return searchString;
+}
 
 //display charts by count and proportion
 function displayHandler(charttype, searchIndex) {

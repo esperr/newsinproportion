@@ -223,3 +223,7 @@ color: grey;
   text-decoration: none;
   cursor: pointer;
 }
+
+#moreoptions {
+  display: none;
+}
