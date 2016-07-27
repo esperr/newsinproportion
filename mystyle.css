@@ -103,7 +103,7 @@ margin-top: 1em;
 }
 
 .searches {
-  width: 10%;
+  width: 15%;
   border: 1px solid black;
   float: right;
   padding: 1em 1.5em 1.5em;
@@ -111,7 +111,7 @@ margin-top: 1em;
   }
 
 .searches dt {
-  padding-bottom: .2em;
+  padding-bottom: .6em;
   }
 
 .searches dl {
@@ -136,6 +136,10 @@ margin-top: 1em;
     position: relative;
  }
 
+ #search {
+    position: relative;
+ }
+
  #results h3 {
    font-family: "IM Fell DW Pica", Serif;
    z-index: 2;
@@ -151,15 +155,17 @@ margin-top: 1em;
 }
 
 #loading p {
-text-align: center;
-font-size: 150%;
-color: DarkGray;
+  text-align: center;
+  font-size: 150%;
+  color: DarkGray;
 }
 
-.baseline {
-font-weight: bold;
-font-size: 150%;
-color: grey;
+#baseline {
+  position: absolute;
+  top: 50%;
+  font-weight: bold;
+  font-size: 150%;
+  color: grey;
 }
 
 #slider {

@@ -36,21 +36,24 @@
 </div>
 
 <div id="main">
-<form id="search">
-    <div class="formpart">Words near each other <input id="proxsearch" type="text" size="35" />&nbsp;&nbsp;<a href="#!" class="togglemore">(more search options)</a></div>
-
+<div id="search">
+<form>
+    <div id="searchparams">
+    <div class="formpart">Words near each other &nbsp;&nbsp;<input id="proxsearch" type="text" size="35" />&nbsp;&nbsp;<a href="#!" class="togglemore">(more search options)</a></div>
     <div id="moreoptions">
-    <div class="formpart">...with any of <input id="orsearch" type="text" size="35" /></div>
-    <div class="formpart">...with all of <input id="andsearch" type="text" size="35" /></div>
-    <div class="formpart">...containing the phrase <input id="phrasesearch" type="text" size="35" /></div>
+    <div class="formpart">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...with any of &nbsp;<input id="orsearch" type="text" size="35" /></div>
+    <div class="formpart">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...with all of &nbsp;<input id="andsearch" type="text" size="35" /></div>
+    <div class="formpart">&nbsp;...containing the phrase &nbsp;<input id="phrasesearch" type="text" size="35" /></div>
     </div>
-    <input id="runsearch" type="button" value="Search by state" />
-    <div class="formpart">Chart type: <input type="radio" name="charttype" value="proportional" checked>Proportional <input type="radio" name="charttype" value="counts">Raw counts</div>
+
+    <div class="formpart"><input id="runsearch" type="button" value="Search by state" /> &nbsp;&nbsp;Chart type: <input type="radio" name="charttype" value="proportional" checked>Proportional <input type="radio" name="charttype" value="counts">Raw counts</div>
+    </div>
+    <br />
     <div class="formpart">Years: <input id="startyear" type="text" size="4" value="1836" disabled /> to <input id="endyear" type="text" size="4"  value="1922" disabled />
     <a href="#!" class="changeyear">(change years)</a></div>
     <div id="slider"></div>
 </form>
-
+</div>
 <div id="printable">
   <div id="printable-stuff">
   <span class="close">×</span>
@@ -87,7 +90,8 @@
 
 <div class="footer">
   <p>Design and contruction by Ed Sperr, M.L.I.S. (<a href="mailto:ed_sperr@hotmail.com">ed_sperr@hotmail.com</a>)   |
-  Data courtesy of <a href="http://chroniclingamerica.loc.gov/" target="_blank">Chronicling America</a>  |  Charting tools from  <a href="https://developers.google.com/chart/interactive/docs/gallery/geochart" target="_blank">Google</a></p>
+  Data courtesy of <a href="http://chroniclingamerica.loc.gov/" target="_blank">Chronicling America</a>  |  Charting tools from  <a href="https://developers.google.com/chart/interactive/docs/gallery/geochart" target="_blank">Google</a>
+ | See the code at <a href="https://github.com/esperr/newsinproportion">GitHub</a></p>
 </div>
 
 
@@ -171,16 +175,7 @@ $(".togglemore").click(function(){
 
 $(".changeyear").click(function(){
   $( ".changeyear" ).remove();
-  $( "#proxsearch" ).remove();
-  $( "#orsearch" ).remove();
-  $( "#andsearch" ).remove();
-  $( "#phrasesearch" ).remove();
-  $( "#runsearch" ).remove();
-  $( "#proxsearch" ).prop( "disabled", true );
-  $( "#orsearch" ).prop( "disabled", true );
-  $( "#andsearch" ).prop( "disabled", true );
-  $( "#phrasesearch" ).prop( "disabled", true );
-  $( "#runsearch" ).prop( "disabled", true );
+  $( "#searchparams" ).remove();
 
   $( "#slider" ).slider({
     orientation: "horizontal",
@@ -268,27 +263,32 @@ $( "#past" ).on( "change", "input[name='term']:checked", function() {
 });
 
 function showWait() {
-  $( "#newssearch" ).prop( "disabled", true );
+
+  $( "#searchparams" ).prop( "disabled", true );
   $( "#runsearch" ).prop( "disabled", true );
-  $( "#newssearch" ).addClass( "hideme" );
+  //$( "#searchparams" ).addClass( "hideme" );
+  $( "form" ).addClass( "hideme" );
   $( "#runsearch" ).addClass( "hideme" );
   if (searches.length > 0) {
     $("#results").append('<div id="loading"><p>Searching -- please wait....</p><img src="loading-bars.svg" width="' + mainwidth*.50 + '"></div>');
     $( "#chart_div" ).addClass( "hideme" );
   } else {
-    $( "#runsearch" ).after( '<span class="baseline">&nbsp;&nbsp;Loading baseline...</span>' );
+    $( "#search" ).append( '<div id="baseline">Loading baseline...</span>' );
   }
   //$( "#past" ).addClass( "hideme" );
   }
 
 function showDone() {
-  $( "#newssearch" ).prop( "disabled", false );
+  $( "#proxsearch" ).prop( "disabled", false );
+  $( "#orsearch" ).prop( "disabled", false );
+  $( "#andsearch" ).prop( "disabled", false );
+  $( "#phrasesearch" ).prop( "disabled", false );
   $( "#runsearch" ).prop( "disabled", false );
-  $( "#newssearch" ).removeClass( "hideme" );
+  $( "form" ).removeClass( "hideme" );
   $( "#runsearch" ).removeClass( "hideme" );
   $( "#results" ).removeClass( "hideme" );
   $("#results #loading").remove();
-  $("#search .baseline").remove();
+  $("#search #baseline").remove();
   //$( "#past" ).removeClass( "hideme" );
   }
 
@@ -342,6 +342,7 @@ function dosearch(prox, or, and, phrase) {
     }
     search = {
       'term': searchString,
+      'parts': [prox, or, and, phrase],
       'count': data.totalItems,
       'stateCounts': []
     };
@@ -488,7 +489,8 @@ function displayHandler(charttype, searchIndex) {
     var selectstate = data.getValue(selectedItem.row, 0);
     //alert('The user selected ' + mySearch.term + ' in the context of ' + selectstate);
     var resultsURL = 'http://chroniclingamerica.loc.gov/search/pages/results/';
-    resultsURL = resultsURL + '?state=' + selectstate + '&dateFilterType=yearRange&date1=' + $("#startyear").val() + '&date2=' + $("#endyear").val() + '&andtext=' + mySearch.term + '&searchType=advanced';
+    resultsURL = resultsURL + '?state=' + selectstate + '&dateFilterType=yearRange&date1=' + $("#startyear").val() + '&date2=' + $("#endyear").val() + '&proxtext=' + mySearch.parts[0] + '&ortext=' + mySearch.parts[1] + '&andtext=' + mySearch.parts[2] +
+       '&phrasetext=' + mySearch.parts[3] + '&searchType=advanced';
     window.open(resultsURL,'_blank');
   }
 }
