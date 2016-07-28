@@ -454,7 +454,7 @@ function displayHandler(charttype, searchIndex) {
   var states = keysrt(mySearch.stateCounts, 'state');
   var basestates = keysrt(searches[0].stateCounts, 'state');
   if (charttype == "proportional") {
-    $("#chart_div").before("<h3>Proportion of results for '" + mySearch.term + "' for each State</h3>")
+    $("#chart_div").before("<h3>Proportion of results for '" + mySearch.term + "' in newspapers</h3>")
     $.each( states, function( i, stateitem ) {
          comparison = stateitem.proportion - basestates[i].proportion;
          tipText = "<strong>" + Math.round10((stateitem.proportion*100), -2) + "%</strong> of US total</br>" + "(" + stateitem.state + " represents " + Math.round10((basestates[i].proportion*100), -2) + "% of all results)";
@@ -466,7 +466,7 @@ function displayHandler(charttype, searchIndex) {
     var options = compOptions;
     $("#chart_div").after('<input id="showcounts" class="toggleview" type="button" name="' + searchIndex + '"value="Show raw counts" />')
   } else {
-    $("#chart_div").before("<h3>Total count of '" + mySearch.term + "' for each State</h3>")
+    $("#chart_div").before("<h3>Total count of '" + mySearch.term + "' in newspapers</h3>")
     $.each( states, function( i, stateitem ) {
       tipText = "<strong>" + stateitem.count.toLocaleString() + "</strong> results <br/>(out of " + basestates[i].count.toLocaleString() + " for the state)";
          stateCountArray.push([stateitem.state, stateitem.count, tipText]);
@@ -518,7 +518,7 @@ function compareTerms(searchone, searchtwo) {
               "<span style='color:blue; font-weight: bold;'>" + searches[searchtwo].term + "</span>  represents " + Math.round10((termTwo[i].proportion*100), -2) + "% of US total";
     termCompArray.push([stateitem.state, comparison, tipText]);
     });
-  $("#chart_div").before("<h3>Proportion of <span style='color:red'>'" + searches[searchone].term + "'</span> vs <span style='color:blue'>'" + searches[searchtwo].term + "'</span> for each State</h3>")
+  $("#chart_div").before("<h3>Proportion of <span style='color:red'>'" + searches[searchone].term + "'</span> vs <span style='color:blue'>'" + searches[searchtwo].term + "'</span> in newspapers</h3>")
   var data = google.visualization.arrayToDataTable(termCompArray);
   data.setColumnProperty(2, 'role', 'tooltip');
   data.setColumnProperty(2, 'html', true);
@@ -528,6 +528,10 @@ function compareTerms(searchone, searchtwo) {
                      tooltip: {isHtml: true},
                      colorAxis: {colors: ['red', 'blue']}
                     };
+
+  if ($("#startyear").val() != "1836" || $("#endyear").val() != "1922" ) {
+      $("#results h3").append(' (' + $("#startyear").val() + ' to ' + $("#endyear").val() + ')');
+    }
   var chart = new google.visualization.GeoChart( document.getElementById('chart_div') );
   google.visualization.events.addListener(chart, 'ready', function () {
     dataURL = chart.getImageURI();
@@ -553,30 +557,53 @@ function getprint(dataURL,type) {
       ctx2.drawImage(background,5,40,825,500);
       ctx2.fillStyle = "black";
       ctx2.font = '25px "IM Fell DW Pica"';
-      titletext = $( "#results h3" ).text()
+      var titletext = $( "#results h3" ).text();
+      if (titletext.length > 80) {
+        //titletext = titletext.slice(0, 80) + "...";
+        var multiline = 1;
+      }
       if (type == "compare") {
         //yes, we have to specially draw our reds and our blues...
         var titleparts = titletext.split("'");
-
         ctx2.fillText(titleparts[0],35,50);
         var offset = 40 + ctx2.measureText(titleparts[0]).width;
         ctx2.fillStyle = "red";
         ctx2.fillText("'" + titleparts[1] + "'",offset,50);
         offset = offset + ctx2.measureText(titleparts[1]).width + 12;
         ctx2.fillStyle = "black";
-        ctx2.fillText(titleparts[2],offset,50);
-        offset = offset + ctx2.measureText(titleparts[2]).width;
-        ctx2.fillStyle = "blue";
-        ctx2.fillText("'" + titleparts[3] + "'",offset,50);
-        offset = offset + ctx2.measureText(titleparts[3]).width + 12;
-        ctx2.fillStyle = "black";
-        ctx2.fillText(titleparts[4],offset,50);
+        if (!multiline) {
+          ctx2.fillText(titleparts[2],offset,50);
+          offset = offset + ctx2.measureText(titleparts[2]).width;
+          ctx2.fillStyle = "blue";
+          ctx2.fillText("'" + titleparts[3] + "'",offset,50);
+          offset = offset + ctx2.measureText(titleparts[3]).width + 12;
+          ctx2.fillStyle = "black";
+          ctx2.fillText(titleparts[4],offset,50);
+        } else {
+          ctx2.fillText(titleparts[2],35,77);
+          var twooffset = 40 + ctx2.measureText(titleparts[2]).width;
+          ctx2.fillStyle = "blue";
+          ctx2.fillText("'" + titleparts[3] + "'",twooffset,77);
+          twooffset = twooffset + ctx2.measureText(titleparts[3]).width + 12;
+          ctx2.fillStyle = "black";
+          ctx2.fillText(titleparts[4],twooffset,77);
+        }
       } else {
-        ctx2.fillText(titletext,35,50);
+        if (!multiline) {
+          ctx2.fillText(titletext,35,50);
+        } else {
+          titletext = titletext.split(" ");
+          var titlepart1 = titletext.slice(0, 12).join(" ");
+          ctx2.fillText(titlepart1,35,50);
+          var titlepart2 = titletext.slice(12).join(" ");
+          ctx2.fillText(titlepart2,35,77);
+        }
       }
       ctx2.font = '15px "IM Fell DW Pica"';
-      ctx2.fillText("Made with News in Proportion",600,500);
-      ctx2.fillText("http://esperr.github.io/newsinproportion",600,520)
+      ctx2.fillText("Made with News in Proportion",630,465);
+      ctx2.fillText("http://esperr.github.io/newsinproportion",630,480)
+      ctx2.fillText("Data from Chronicling America",630,510);
+      ctx2.fillText("http://chroniclingamerica.loc.gov/",630,525)
       var newdataURL = c2.toDataURL();
       $( "#results" ).append('<a href="#!" class="printMe">Printable version</a>');
   }
