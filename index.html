@@ -57,8 +57,8 @@
 <div id="printable">
   <div id="printable-stuff">
   <span class="close">×</span>
-  <canvas id="myCanvas2" width="900" height="550">
-    Your browser does not support the HTML5 canvas tag.</canvas>
+  <!--<canvas id="myCanvas2" width="900" height="550" >
+    Your browser does not support the HTML5 canvas tag.</canvas>-->
   </div>
 </div>
 
@@ -543,7 +543,10 @@ function compareTerms(searchone, searchtwo) {
 //Google doesn't support titles for GeoCharts, so we draw the chart to a hidden camvas, overlay our text
 //and use canvas-to-data-uri to send *that* to a modal
 function getprint(dataURL,type) {
-  var c2 = document.getElementById("myCanvas2");
+  var c2 = document.createElement("canvas");
+  c2.width = 900;
+  c2.height = 550;
+  //var c2 = document.getElementById("myCanvas2");
   var ctx2 = c2.getContext("2d");
   ctx2.clearRect(0, 0, c2.width, c2.height);
   var background = new Image();
@@ -605,6 +608,7 @@ function getprint(dataURL,type) {
       ctx2.fillText("Data from Chronicling America",630,510);
       ctx2.fillText("http://chroniclingamerica.loc.gov/",630,525)
       var newdataURL = c2.toDataURL();
+      $( "#printable-stuff" ).append('<img src="' + newdataURL + '">');
       $( "#results" ).append('<a href="#!" class="printMe">Printable version</a>');
   }
 }
