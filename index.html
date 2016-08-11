@@ -608,6 +608,7 @@ function getprint(dataURL,type) {
       ctx2.fillText("Data from Chronicling America",630,510);
       ctx2.fillText("http://chroniclingamerica.loc.gov/",630,525)
       var newdataURL = c2.toDataURL();
+      $( "#printable-stuff img" ).remove();
       $( "#printable-stuff" ).append('<img src="' + newdataURL + '">');
       $( "#results" ).append('<a href="#!" class="printMe">Printable version</a>');
   }
