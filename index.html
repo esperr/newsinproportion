@@ -49,7 +49,7 @@
     <div class="formpart"><input id="runsearch" type="button" value="Search by state" /> &nbsp;&nbsp;Chart type: <input type="radio" name="charttype" value="proportional" checked>Proportional <input type="radio" name="charttype" value="counts">Raw counts</div>
     </div>
     <br />
-    <div class="formpart">Years: <input id="startyear" type="text" size="4" value="1836" disabled /> to <input id="endyear" type="text" size="4"  value="1922" disabled />
+    <div class="formpart">Years: <input id="startyear" type="text" size="4" value="1786" disabled /> to <input id="endyear" type="text" size="4"  value="1943" disabled />
     <a href="#!" class="changeyear">(change years)</a></div>
     <div id="slider"></div>
 </form>
@@ -270,10 +270,10 @@ function showWait() {
   $( "form" ).addClass( "hideme" );
   $( "#runsearch" ).addClass( "hideme" );
   if (searches.length > 0) {
-    $("#results").append('<div id="loading"><p>Searching -- please wait....</p><img src="loading-bars.svg" width="' + mainwidth*.50 + '"></div>');
+    $("#results").append('<div id="loading"><p>Searching -- please wait....</p><progress id="fetchresults" value="1" max="100"></progress></div>');
     $( "#chart_div" ).addClass( "hideme" );
   } else {
-    $( "#search" ).append( '<div id="baseline">Loading baseline...</span>' );
+    $( "#search" ).append( '<div id="baseline">Loading baseline...<progress id="fetchresults" value="1" max="100"></progress></div>' );
   }
   //$( "#past" ).addClass( "hideme" );
   }
@@ -394,7 +394,7 @@ function csearch(prox, or, and, phrase, state) {
       'proportion': proportion
     };
     mySearch.stateCounts.push(stateCount);
-
+    $("progress").attr("value", mySearch.stateCounts.length*2.08);
     if (mySearch.stateCounts.length == states.length) {
       if (searches.length > 1) {
         showSearches();
