@@ -118,7 +118,7 @@ var endyear = $("#endyear").val();
 var searches = [];
 var stateCounts = [];
 //This will need to be edited by hand when new states are added
-var states = ["Alaska", "Alabama", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maryland",
+var states = ["Alaska", "Alabama", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maryland",
              "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico",
              "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin"]
 
@@ -452,8 +452,10 @@ function displayHandler(charttype, searchIndex) {
   var basestates = keysrt(searches[0].stateCounts, 'state');
   if (charttype == "proportional") {
     $("#chart_div").before("<h3>Proportion of results for '" + mySearch.term + "' in newspapers</h3>")
+    console.log(JSON.stringify(states));
     $.each( states, function( i, stateitem ) {
-         comparison = stateitem.proportion - basestates[i].proportion;
+         //comparison = stateitem.proportion / basestates[i].proportion;
+         comparison = stateitem.count / basestates[i].count;
          tipText = "<strong>" + Math.round10((stateitem.proportion*100), -2) + "%</strong> of US total</br>" + "(" + stateitem.state + " represents " + Math.round10((basestates[i].proportion*100), -2) + "% of all results)";
          stateCompArray.push([stateitem.state, comparison, tipText]);
          });
