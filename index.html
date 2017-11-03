@@ -117,7 +117,6 @@ var endyear = 1943;
 
 //Do we have a datespan specified in the querystring?
 if (location.search) {
-  alert("dates!");
   var queryDict = {};
   location.search.substr(1).split("&").forEach(function(item) {
       queryDict[item.split("=")[0]] = item.split("=")[1]
@@ -541,6 +540,7 @@ function displayHandler(charttype, searchIndex) {
 
 //Prepare and display term comparison chart
 function compareTerms(searchone, searchtwo) {
+  var basestates = keysrt(searches[0].stateCounts, 'state');
   $( "#results" ).empty();
   $( "#results" ).append( '<div id="chart_div">' );
   var termCompArray =  [['State', 'Term Comparison', 'Tooltip']];
@@ -548,8 +548,13 @@ function compareTerms(searchone, searchtwo) {
   var termTwo = keysrt(searches[searchtwo].stateCounts, 'state');
   $.each( termOne, function( i, stateitem ) {
     //make our first proportion negative, then add them together to find the midpoint
-    oneprop = stateitem.proportion - (stateitem.proportion*2);
-    comparison = oneprop + termTwo[i].proportion;
+    if (basestates[i].count > 0) {
+      oneprop = -Math.abs(stateitem.count / basestates[i].count);
+      twoprop = termTwo[i].count / basestates[i].count;
+      comparison = oneprop + twoprop;
+    } else {
+      comparison = 0;
+    }
     tipText = "<span style='color:red; font-weight: bold;'>" + searches[searchone].term + "</span> represents " + Math.round10((stateitem.proportion*100), -2) + "% of US total</br>" +
               "<span style='color:blue; font-weight: bold;'>" + searches[searchtwo].term + "</span>  represents " + Math.round10((termTwo[i].proportion*100), -2) + "% of US total";
     termCompArray.push([stateitem.state, comparison, tipText]);
