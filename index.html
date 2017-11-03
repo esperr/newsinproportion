@@ -49,7 +49,7 @@
     <div class="formpart"><input id="runsearch" type="button" value="Search by state" /> &nbsp;&nbsp;Chart type: <input type="radio" name="charttype" value="proportional" checked>Proportional <input type="radio" name="charttype" value="counts">Raw counts</div>
     </div>
     <br />
-    <div class="formpart">Years: <input id="startyear" type="text" size="4" value="1786" disabled /> to <input id="endyear" type="text" size="4"  value="1943" disabled />
+    <div id="pickyears">Years: <span id="startyear"></span> to <span id="endyear"></span>
     <a href="#!" class="changeyear">(change years)</a></div>
     <div id="slider"></div>
 </form>
@@ -112,8 +112,19 @@ if (end !== null) {
     $("#endyear").val(end);
 }
 
-var startyear = $("#startyear").val();
-var endyear = $("#endyear").val();
+var startyear = 1789;
+var endyear = 1943;
+
+//Do we have a datespan specified in the querystring?
+if (location.search) {
+  alert("dates!");
+  var queryDict = {};
+  location.search.substr(1).split("&").forEach(function(item) {
+      queryDict[item.split("=")[0]] = item.split("=")[1]
+  })
+  if (queryDict["start"]) { startyear = queryDict["start"]; }
+  if (queryDict["end"]) { endyear = queryDict["end"]; }
+}
 
 var searches = [];
 var stateCounts = [];
@@ -168,28 +179,51 @@ function handlesearch() {
   //document.getElementById('newssearch').focus();
   }
 
+  function querySearch(queryDict) {
+
+  }
+
 $(".togglemore").click(function(){
   $("#moreoptions").css("display", "block");
   $( ".togglemore" ).remove();
   });
 
-$(".changeyear").click(function(){
-  $( ".changeyear" ).remove();
-  $( "#searchparams" ).remove();
+$("#startyear").append(startyear);
+$("#endyear").append(endyear);
 
-  $( "#slider" ).slider({
-    orientation: "horizontal",
-    min: 1836,
-    max: 1922,
-    range: true,
-    values: [ $("#startyear").val(), $("#endyear").val() ],
-    change: function( event, ui ) {
-      console.log($( "#slider" ).slider( "values" ));
-      $( "#startyear" ).val( $( "#slider" ).slider( "values", 0 ) );
-      $( "#endyear" ).val( $( "#slider" ).slider( "values", 1 ) );
+$(".changeyear").click(function(){
+  //$( ".changeyear" ).remove();
+  $( "#searchparams" ).remove();
+  pickYears();
+  $( "#search" ).append('<a href="#!" class="reload">Restart with new date range</a>');
+  });
+
+  function pickYears() {
+    $("#pickyears").empty();
+    $("#pickyears").append('Start: <select id="startyear" name="startyear">');
+    $("#pickyears").append('&nbsp;&nbsp;End: <select id="endyear" name="endyear">');
+    console.log(startyear);
+    for (i = 1786; i<1944; i++) {
+      if (i < endyear) {
+        if (i == startyear) {
+          $("[name=startyear]").append('<option value="' + i + '" selected="selected">' + i + '</option>');
+        } else {
+          $("[name=startyear]").append('<option value="' + i + '">' + i + '</option>');
+        }
       }
-    });
-    $( "#search" ).append('<a href="#!" class="reload">Restart with new date range</a>');
+      if (i > startyear) {
+        if (i == endyear) {
+          $("[name=endyear]").append('<option value="' + i + '" selected="selected">' + i + '</option>');
+        } else {
+          $("[name=endyear]").append('<option value="' + i + '">' + i + '</option>');
+        }
+      }
+    }
+  }
+
+  $( "#pickyears" ).on( "change", "[name=startyear]", function() {
+    startyear = Number($("[name=startyear]").val());
+    pickYears();
   });
 
 //We have to use event delegation to select the things added after page load...
@@ -452,10 +486,13 @@ function displayHandler(charttype, searchIndex) {
   var basestates = keysrt(searches[0].stateCounts, 'state');
   if (charttype == "proportional") {
     $("#chart_div").before("<h3>Proportion of results for '" + mySearch.term + "' in newspapers</h3>")
-    console.log(JSON.stringify(states));
     $.each( states, function( i, stateitem ) {
-         //comparison = stateitem.proportion / basestates[i].proportion;
-         comparison = stateitem.count / basestates[i].count;
+         //comparison = stateitem.proportion - basestates[i].proportion;
+         if (basestates[i].count > 0) {
+           comparison = stateitem.count / basestates[i].count;
+         } else {
+           comparison = 0;
+         }
          tipText = "<strong>" + Math.round10((stateitem.proportion*100), -2) + "%</strong> of US total</br>" + "(" + stateitem.state + " represents " + Math.round10((basestates[i].proportion*100), -2) + "% of all results)";
          stateCompArray.push([stateitem.state, comparison, tipText]);
          });
@@ -476,7 +513,7 @@ function displayHandler(charttype, searchIndex) {
     var options = countOptions;
     $("#chart_div").after('<input id="showprops" class="toggleview" type="button" name="' + searchIndex + '" value="Show proportions" />')
   }
-  if ($("#startyear").val() != "1836" || $("#endyear").val() != "1922" ) {
+  if ($("#startyear").val() != "1789" || $("#endyear").val() != "1943" ) {
     $("#results h3").append(' (' + $("#startyear").val() + ' to ' + $("#endyear").val() + ')');
     }
   var chart = new google.visualization.GeoChart( document.getElementById('chart_div') );
@@ -528,7 +565,7 @@ function compareTerms(searchone, searchtwo) {
                      colorAxis: {colors: ['red', 'blue']}
                     };
 
-  if ($("#startyear").val() != "1836" || $("#endyear").val() != "1922" ) {
+  if ($("#startyear").val() != "1789" || $("#endyear").val() != "1943" ) {
       $("#results h3").append(' (' + $("#startyear").val() + ' to ' + $("#endyear").val() + ')');
     }
   var chart = new google.visualization.GeoChart( document.getElementById('chart_div') );
