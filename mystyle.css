@@ -98,7 +98,7 @@ border: 1px solid black;
 
 #search .formpart {
   padding: .2em;
-  font-size: 75%;
+  font-size: 90%;
   }
 
 /*
@@ -170,17 +170,6 @@ margin-top: 1em;
   font-weight: bold;
   font-size: 150%;
   color: grey;
-}
-
-#explaining {
-  width: 70%;
-  float: left;
-}
-
-#credits {
-  width: 20%;
-  float: right;
-  padding: 1em 2em 2em;
 }
 
 #printable {
