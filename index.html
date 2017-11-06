@@ -4,6 +4,7 @@
   <title>News in Proportion</title>
   <link rel="stylesheet" type="text/css"
       href="https://fonts.googleapis.com/css?family=IM Fell DW Pica">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
   <link href="mystyle.css" rel="stylesheet" type="text/css">
 
@@ -23,19 +24,27 @@
 
 <body>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
-<script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<!--<script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>-->
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript" src="deciround.js"></script>
 
-<div class="wraper">
+<!--<div class="wraper">-->
+<div class="container">
 
-<div id="header">
+
+<!--<div id="header">-->
+<div id="header" class="jumbotron">
 <h1>News in Proportion</h1>
 <p>Proportional maps of Chronicling America</p>
 <p class="about"><a href="about.html" target="_blank">About News in Proportion</a></p>
 </div>
 
-<div id="main">
+<div class="row">
+
+
+<div id="main" class="col-sm-12 col-md-8 col-lg-9">
+<div class="panel panel-default">
+  <div class="panel-body">
 <div id="search">
 <form>
     <div id="searchparams">
@@ -54,6 +63,9 @@
     <div id="slider"></div>
 </form>
 </div>
+</div>
+</div>
+
 <div id="printable">
   <div id="printable-stuff">
   <span class="close">×</span>
@@ -81,19 +93,24 @@
 <br /><br />
 </div>
 
-<div id="past" class="searches">
+<div id="pastsearch" class="searches col-sm-12 col-md-4 col-lg-3 hideme">
+  <div class="panel panel-default">
+    <div class="panel-heading">Past searches</div>
+    <div id="past" class="panel-body">
   <p>Enter your Chronicling America search...</p>
+</div>
+</div>
 </div>
 
 <div class="push"></div>
-</div>
 
+</div>
 <div class="footer">
   <p>Design and contruction by Ed Sperr, M.L.I.S. (<a href="mailto:ed_sperr@hotmail.com">ed_sperr@hotmail.com</a>)   |
   Data courtesy of <a href="http://chroniclingamerica.loc.gov/" target="_blank">Chronicling America</a>  |  Charting tools from  <a href="https://developers.google.com/chart/interactive/docs/gallery/geochart" target="_blank">Google</a>
  | See the code at <a href="https://github.com/esperr/newsinproportion">GitHub</a></p>
 </div>
-
+</div>
 
 <script>
 
@@ -324,11 +341,13 @@ function showDone() {
 
 function showSearches() {
     $( "#past" ).empty();
-    $( "#past" ).append("<h3>Searches</h3>");
     $( "#past" ).append("<dl>");
     for (var i = 1; i < searches.length; i++) {
       $("#past dl").append('<dt class="pastsearch"><a href="#!">' + searches[i].term + "</a></dt>");
       $("#past dt").last().data("searchIndex", i);
+      }
+      if (searches.length > 1) {
+        $( "#pastsearch" ).removeClass("hideme");
       }
       if (searches.length > 2) {
         $("#past dl").after('<input id="showcompare" type="button" value="Compare terms" />')
