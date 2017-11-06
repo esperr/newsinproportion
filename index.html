@@ -512,8 +512,8 @@ function displayHandler(charttype, searchIndex) {
     var options = countOptions;
     $("#chart_div").after('<input id="showprops" class="toggleview" type="button" name="' + searchIndex + '" value="Show proportions" />')
   }
-  if ($("#startyear").val() != "1789" || $("#endyear").val() != "1943" ) {
-    $("#results h3").append(' (' + $("#startyear").val() + ' to ' + $("#endyear").val() + ')');
+  if (startyear != "1789" || endyear != "1943" ) {
+    $("#results h3").append(' (' + startyear + ' to ' + endyear + ')');
     }
   var chart = new google.visualization.GeoChart( document.getElementById('chart_div') );
 
