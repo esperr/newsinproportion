@@ -55,7 +55,8 @@
     <div class="formpart">&nbsp;...containing the phrase &nbsp;<input id="phrasesearch" type="text" size="35" /></div>
     </div>
 
-    <div class="formpart"><input id="runsearch" type="button" value="Search by state" /> &nbsp;&nbsp;Chart type: <input type="radio" name="charttype" value="proportional" checked>Proportional <input type="radio" name="charttype" value="counts">Raw counts</div>
+    <div class="formpart">
+    <input id="runsearch" type="button" value="Search by state" /> &nbsp;&nbsp;<!--Chart type: <input type="radio" name="charttype" value="proportional" checked>Proportional <input type="radio" name="charttype" value="counts">Raw counts--></div>
     </div>
     <br />
     <div id="pickyears">Years: <span id="startyear"></span> to <span id="endyear"></span>
@@ -131,6 +132,7 @@ if (end !== null) {
 
 var startyear = 1789;
 var endyear = 1943;
+var charttype = 'proportional';
 
 //Do we have a datespan specified in the querystring?
 if (location.search) {
@@ -144,10 +146,11 @@ if (location.search) {
 
 var searches = [];
 var stateCounts = [];
-//This will need to be edited by hand when new states are added
-var states = ["Alaska", "Alabama", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maryland",
-             "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico",
-             "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin"]
+//This will need to be edited by hand when more Massachusetts papers are added (or any from New Hampshire or Rhode Island)
+var states = ["Alaska", "Alabama", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky",
+              "Louisiana", "Maine",
+            "Maryland", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico",
+             "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"]
 
 google.charts.load('current', {'packages':['geochart']});
 
@@ -162,7 +165,7 @@ var compOptions = {
                   //width: mainwidth,
                    //colorAxis: {minValue: -.055, maxValue: .4, colors: ['#440D57', '#2092BC','#FDE725']},
                    //colorAxis: {colors: ['#440D57', '#2092BC','#FDE725']}
-                   colorAxis: {colors: ['#D3FDEC', '#FDFBB7', '#FFCA8B', '#FF7761', '#EC4D94']}
+                   //colorAxis: {colors: ['#D3FDEC', '#FDFBB7', '#FFCA8B', '#FF7761', '#EC4D94']}
                   };
 
 //set our baseline
@@ -243,17 +246,17 @@ $(".changeyear").click(function(){
   });
 
 //We have to use event delegation to select the things added after page load...
-$( "#results" ).on( "click", "#showcounts", function() {
-   var charttype = 'counts';
-   var searchIndex = $(this).attr("name");
-   displayHandler(charttype, searchIndex);
-   });
+//$( "#results" ).on( "click", "#showcounts", function() {
+//   var charttype = 'counts';
+//   var searchIndex = $(this).attr("name");
+//   displayHandler(charttype, searchIndex);
+//   });
 
-$( "#results" ).on( "click", "#showprops", function() {
-    var charttype = 'proportional';
-    var searchIndex = $(this).attr("name");
-    displayHandler(charttype, searchIndex);
-    });
+//$( "#results" ).on( "click", "#showprops", function() {
+//    var charttype = 'proportional';
+//    var searchIndex = $(this).attr("name");
+//    displayHandler(charttype, searchIndex);
+//    });
 
 $( "#past" ).on( "click", ".pastsearch", function() {
     var charttype = $( "input:radio[name=charttype]:checked" ).val();
@@ -450,11 +453,13 @@ function csearch(prox, or, and, phrase, state) {
     if (mySearch.stateCounts.length == states.length) {
       if (searches.length > 1) {
         showSearches();
-      }      if ($( "input:radio[name=charttype]:checked" ).val() == "proportional") {
-        displayHandler('proportional');
-      } else {
-        displayHandler('counts');
       }
+      displayHandler('proportional');
+      //if ($( "input:radio[name=charttype]:checked" ).val() == "proportional") {
+      //  displayHandler('proportional');
+      //} else {
+      //  displayHandler('counts');
+      //}
     }
   }
      });
@@ -485,7 +490,7 @@ function searchStringer(prox, or, and, phrase) {
   return searchString;
 }
 
-//display charts by count and proportion
+//display charts by proportion
 function displayHandler(charttype, searchIndex) {
   if(typeof searchIndex == 'undefined') {
     var searchIndex = searches.length - 1;
@@ -502,7 +507,7 @@ function displayHandler(charttype, searchIndex) {
   $( "#results" ).append( '<div id="chart_div">' );
   var states = keysrt(mySearch.stateCounts, 'state');
   var basestates = keysrt(searches[0].stateCounts, 'state');
-  if (charttype == "proportional") {
+  //if (charttype == "proportional") {
     $("#chart_div").before("<h3>Proportion of results for '" + mySearch.term + "' in newspapers</h3>")
     $.each( states, function( i, stateitem ) {
          //comparison = stateitem.proportion - basestates[i].proportion;
@@ -518,19 +523,20 @@ function displayHandler(charttype, searchIndex) {
     data.setColumnProperty(2, 'role', 'tooltip');
     data.setColumnProperty(2, 'html', true);
     var options = compOptions;
-    $("#chart_div").after('<input id="showcounts" class="toggleview" type="button" name="' + searchIndex + '"value="Show raw counts" />')
-  } else {
-    $("#chart_div").before("<h3>Total count of '" + mySearch.term + "' in newspapers</h3>")
-    $.each( states, function( i, stateitem ) {
-      tipText = "<strong>" + stateitem.count.toLocaleString() + "</strong> results <br/>(out of " + basestates[i].count.toLocaleString() + " for the state)";
-         stateCountArray.push([stateitem.state, stateitem.count, tipText]);
-         });
-    var data = google.visualization.arrayToDataTable(stateCountArray);
-    data.setColumnProperty(2, 'role', 'tooltip');
-    data.setColumnProperty(2, 'html', true);
-    var options = countOptions;
-    $("#chart_div").after('<input id="showprops" class="toggleview" type="button" name="' + searchIndex + '" value="Show proportions" />')
-  }
+    //$("#chart_div").after('<input id="showcounts" class="toggleview" type="button" name="' + searchIndex + '"value="Show raw counts" />')
+  //}
+  //else {
+  //  $("#chart_div").before("<h3>Total count of '" + mySearch.term + "' in newspapers</h3>")
+  //  $.each( states, function( i, stateitem ) {
+  //    tipText = "<strong>" + stateitem.count.toLocaleString() + "</strong> results <br/>(out of " + basestates[i].count.toLocaleString() + " for the state)";
+  //       stateCountArray.push([stateitem.state, stateitem.count, tipText]);
+  //       });
+  //  var data = google.visualization.arrayToDataTable(stateCountArray);
+  //  data.setColumnProperty(2, 'role', 'tooltip');
+  //  data.setColumnProperty(2, 'html', true);
+  //  var options = countOptions;
+  //  $("#chart_div").after('<input id="showprops" class="toggleview" type="button" name="' + searchIndex + '" value="Show proportions" />')
+  //}
   if (startyear != "1789" || endyear != "1943" ) {
     $("#results h3").append(' (' + startyear + ' to ' + endyear + ')');
     }
@@ -589,7 +595,8 @@ function compareTerms(searchone, searchtwo) {
                      colorAxis: {colors: ['red', 'blue']}
                     };
 
-  if ($("#startyear").val() != "1789" || $("#endyear").val() != "1943" ) {
+  if (startyear != "1789" || endyear != "1943" ) {
+    console.log(startyear + " " + endyear);
       $("#results h3").append(' (' + $("#startyear").val() + ' to ' + $("#endyear").val() + ')');
     }
   var chart = new google.visualization.GeoChart( document.getElementById('chart_div') );
