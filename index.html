@@ -42,7 +42,7 @@
 <div class="row">
 
 
-<div id="main" class="col-sm-12 col-md-8 col-lg-9">
+<div id="main" class="col-sm-12 col-md-8 col-lg-8">
 <div class="panel panel-default">
   <div class="panel-body">
 <div id="search">
@@ -81,13 +81,16 @@
   <div id="chart_div">
   <h2>Welcome to News in Proportion</h2>
   <p>News in Proportion is an experiment in data visualization that allows you to explore just what made news in the past in different parts of the country.
-    Built on top of the rich data provided by <a href="http://chroniclingamerica.loc.gov/" target="_blank">Chronicling America</a>, this tool maps your search and shows not only many times it appears in
-    the digitized newspaper pages of a given state, but also how great a <em>proportion</em> of a state's news that number represents.</p>
+    Built on top of the rich data provided by <a href="http://chroniclingamerica.loc.gov/" target="_blank">Chronicling America</a>, this tool maps your search
+    and shows a <em>proportional</em> view of your search for each state.</p>
 
   <p>The geographical concentration of some searches, such as "lutefisk" or "tarpon", probably won't surprise you. Others, such as "anthrax", just might.</p>
+  <img width=70% src="lutefisk.png" alt="Proportional map of the term 'lutefisk'">
 
   <p>Once you have performed a couple of searches, you can toggle back and forth to compare them.
     You can even directly compare any two terms to see which is more prevalent in each state.</p>
+    <img width=70% src="codvssalmon.png" alt="Proportional map comparing the terma 'cod' and 'salmon'">
+
 </div>
 </div>
 <br /><br />
@@ -116,7 +119,7 @@
 
 (function() {
 
-var mainwidth = $( "#main" ).width();
+//var mainwidth = $( "#main" ).width();
 
 //check to see if we have a custom date range in the querystring...
 start = getParameterByName("start");
