@@ -1,0 +1,777 @@
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+  <title>News in Proportion</title>
+  <link rel="stylesheet" type="text/css"
+      href="https://fonts.googleapis.com/css?family=IM Fell DW Pica">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <link href="mystyle.css" rel="stylesheet" type="text/css">
+
+  <script>
+  //Google analytics tag
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-433406-4', 'auto');
+  ga('send', 'pageview');
+  </script>
+
+</head>
+
+
+<body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+<!--<script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>-->
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript" src="deciround.js"></script>
+
+<!--<div class="wraper">-->
+<!--random code goes here! -->
+<div class="container">
+
+
+<!--<div id="header">-->
+<div id="header" class="jumbotron">
+<h1>News in Proportion</h1>
+<p>Proportional maps of Chronicling America</p>
+<p class="about"><a href="about.html" target="_blank">About News in Proportion</a></p>
+</div>
+
+<div class="row">
+
+
+<div id="main" class="col-sm-12 col-md-8 col-lg-8">
+<div class="panel panel-default">
+  <div class="panel-body">
+<div id="search">
+<form>
+    <div id="searchparams">
+    <div class="formpart">Words near each other &nbsp;&nbsp;<input id="proxsearch" type="text" size="35" />&nbsp;&nbsp;<a href="#!" class="togglemore">(more search options)</a></div>
+    <div id="moreoptions">
+    <div class="formpart">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...with any of &nbsp;<input id="orsearch" type="text" size="35" /></div>
+    <div class="formpart">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...with all of &nbsp;<input id="andsearch" type="text" size="35" /></div>
+    <div class="formpart">&nbsp;...containing the phrase &nbsp;<input id="phrasesearch" type="text" size="35" /></div>
+    </div>
+
+    <div class="formpart">
+    <input id="runsearch" type="button" value="Search by state" /> &nbsp;&nbsp;<!--  Chart type: <input type="radio" name="charttype" value="proportional" checked>Proportional <input type="radio" name="charttype" value="counts">Raw counts--></div>
+    </div>
+    <br />
+    <div id="pickyears">Years: <span id="startyear"></span> to <span id="endyear"></span>
+    <a href="#!" class="changeyear">(change years)</a></div>
+    <div id="slider"></div>
+</form>
+</div>
+</div>
+</div>
+
+<div id="printable">
+  <div id="printable-stuff">
+  <span class="close">×</span>
+
+  </div>
+</div>
+
+<div id='png'></div>
+
+<div id="results">
+  <!--<img src='usmap.png'>-->
+  <div id="chart_div">
+  <h2>Welcome to News in Proportion</h2>
+  <p>News in Proportion is an experiment in data visualization that allows you to explore just what made news in the past in different parts of the country.
+    Built on top of the rich data provided by <a href="http://chroniclingamerica.loc.gov/" target="_blank">Chronicling America</a>, this tool maps your search
+    and shows a <em>proportional</em> view of your search for each state.</p>
+
+  <p>The geographical concentration of some searches, such as "lutefisk" or "tarpon", probably won't surprise you. Others, such as "anthrax", just might.</p>
+  <img width=70% src="lutefisk.png" alt="Proportional map of the term 'lutefisk'">
+
+  <p>Once you have performed a couple of searches, you can toggle back and forth to compare them.
+    You can even directly compare any two terms to see which is more prevalent in each state.</p>
+    <img width=70% src="codvssalmon.png" alt="Proportional map comparing the terma 'cod' and 'salmon'">
+
+</div>
+</div>
+<br /><br />
+</div>
+
+<div id="pastsearch" class="searches col-sm-12 col-md-4 col-lg-3 hideme">
+  <div class="panel panel-default">
+    <div class="panel-heading">Past searches</div>
+    <div id="past" class="panel-body">
+  <p>Enter your Chronicling America search...</p>
+</div>
+</div>
+</div>
+
+<div class="push"></div>
+
+</div>
+<div class="footer">
+  <p>Design and contruction by Ed Sperr, M.L.I.S. (<a href="mailto:ed_sperr@hotmail.com">ed_sperr@hotmail.com</a>)   |
+  Data courtesy of <a href="http://chroniclingamerica.loc.gov/" target="_blank">Chronicling America</a>  |  Charting tools from  <a href="https://developers.google.com/chart/interactive/docs/gallery/geochart" target="_blank">Google</a>
+ | See the code at <a href="https://github.com/esperr/newsinproportion">GitHub</a></p>
+</div>
+</div>
+
+<script>
+
+(function() {
+  var pausetime = performance.now();
+  var waitTime = 300;
+
+//var mainwidth = $( "#main" ).width();
+
+//check to see if we have a custom date range in the querystring...
+start = getParameterByName("start");
+if (start !== null) {
+    $("#startyear").val(start);
+}
+
+end = getParameterByName("end");
+if (end !== null) {
+    $("#endyear").val(end);
+}
+
+var startyear = 1789;
+var endyear = 1943;
+var charttype = 'proportional';
+
+//Do we have a datespan specified in the querystring?
+if (location.search) {
+  var queryDict = {};
+  location.search.substr(1).split("&").forEach(function(item) {
+      queryDict[item.split("=")[0]] = item.split("=")[1]
+  })
+  if (queryDict["start"]) { startyear = queryDict["start"]; }
+  if (queryDict["end"]) { endyear = queryDict["end"]; }
+}
+
+var searches = [];
+var stateCounts = [];
+//This will need to be edited by hand when more Massachusetts papers are added (or any from New Hampshire or Rhode Island)
+var states = ["Alaska", "Alabama", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky",
+              "Louisiana", "Maine",
+            "Maryland", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico",
+             "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"]
+
+google.charts.load('current', {'packages':['geochart']});
+
+var countOptions =  { resolution: 'provinces',
+                     tooltip: {isHtml: true},
+                   region: 'US'};
+
+var compOptions = {
+                   resolution: 'provinces',
+                   region: 'US',
+                  tooltip: {isHtml: true},
+                  //width: mainwidth,
+                   //colorAxis: {minValue: -.055, maxValue: .4, colors: ['#440D57', '#2092BC','#FDE725']},
+                   //colorAxis: {colors: ['#440D57', '#2092BC','#FDE725']}
+                   //colorAxis: {colors: ['#D3FDEC', '#FDFBB7', '#FFCA8B', '#FF7761', '#EC4D94']}
+                  };
+
+//set our baseline
+term = "";
+doNewSearch();
+//dosearch(term);
+
+//Actions and display bits
+$("#runsearch").click(function(){
+    handlesearch();
+  });
+
+$(document).keypress(function(e) {
+  if(e.which == 13) {
+      //Because both IE and FF now "helpfully" ignore the spec and treat 'button' the same as 'submit'
+      e.preventDefault();
+      handlesearch();
+  }
+});
+
+function handlesearch() {
+  var prox = $("#proxsearch").val();
+  var or = $("#orsearch").val();
+  var and = $("#andsearch").val();
+  var phrase = $("#phrasesearch").val();
+  dosearch(prox, or, and, phrase);
+  $("#proxsearch").val("");
+  $("#orsearch").val("");
+  $("#andsearch").val("");
+  $("#phrasesearch").val("");
+  //document.getElementById('newssearch').focus();
+  }
+
+  function querySearch(queryDict) {
+
+  }
+
+$(".togglemore").click(function(){
+  $("#moreoptions").css("display", "block");
+  $( ".togglemore" ).remove();
+  });
+
+$("#startyear").append(startyear);
+$("#endyear").append(endyear);
+
+$(".changeyear").click(function(){
+  //$( ".changeyear" ).remove();
+  $( "#searchparams" ).remove();
+  pickYears();
+  $( "#search" ).append('<a href="#!" class="reload">Restart with new date range</a>');
+  });
+
+  function pickYears() {
+    $("#pickyears").empty();
+    $("#pickyears").append('Start: <select id="startyear" name="startyear">');
+    $("#pickyears").append('&nbsp;&nbsp;End: <select id="endyear" name="endyear">');
+    console.log(startyear);
+    for (i = 1786; i<1944; i++) {
+      if (i < endyear) {
+        if (i == startyear) {
+          $("[name=startyear]").append('<option value="' + i + '" selected="selected">' + i + '</option>');
+        } else {
+          $("[name=startyear]").append('<option value="' + i + '">' + i + '</option>');
+        }
+      }
+      if (i > startyear) {
+        if (i == endyear) {
+          $("[name=endyear]").append('<option value="' + i + '" selected="selected">' + i + '</option>');
+        } else {
+          $("[name=endyear]").append('<option value="' + i + '">' + i + '</option>');
+        }
+      }
+    }
+  }
+
+  $( "#pickyears" ).on( "change", "[name=startyear]", function() {
+    startyear = Number($("[name=startyear]").val());
+    pickYears();
+  });
+
+//We have to use event delegation to select the things added after page load...
+//$( "#results" ).on( "click", "#showcounts", function() {
+//   var charttype = 'counts';
+//   var searchIndex = $(this).attr("name");
+//   displayHandler(charttype, searchIndex);
+//   });
+
+//$( "#results" ).on( "click", "#showprops", function() {
+//    var charttype = 'proportional';
+//    var searchIndex = $(this).attr("name");
+//    displayHandler(charttype, searchIndex);
+//    });
+
+$( "#past" ).on( "click", ".pastsearch", function() {
+    var charttype = $( "input:radio[name=charttype]:checked" ).val();
+    var searchIndex = $(this).data("searchIndex");
+    displayHandler(charttype, searchIndex);
+    });
+
+$( "#past" ).on( "click", "#showcompare", function() {
+  $( "#past" ).empty();
+  $( "#past" ).append("<dl>");
+  for (var i = 1; i < searches.length; i++) {
+    $( "#past dl" ).append('<dt><input type="checkbox" name="term" id="' + i + '" value="' + i + '"> <label for="' + i + '">' + searches[i].term + '</label></dt>');
+    }
+  $("#past dl").after('<input id="compare" type="button" value="Compare" /><p style="margin-top: 1em;"><a href="#!" class="showsearches">(go back to search list)</a></p>')
+  });
+
+$( "#past" ).on( "click", "#compare", function() {
+    var searchone = $("input[name='term']:checked").first().val();
+    var searchtwo = $("input[name='term']:checked").last().val();
+    compareTerms(searchone, searchtwo);
+    });
+
+$( "#past" ).on( "click", ".showsearches", function() {
+    showSearches();
+    });
+
+$( "#search" ).on( "click", ".reload", function() {
+    //Thanks HTML5!
+    myAddy = location.pathname;
+    myAddy = myAddy + '?start=' + $("#startyear").val() + '&end=' + $("#endyear").val();
+    history.pushState(null, null, myAddy);
+    location.reload();
+    });
+
+//Printable modal stuff
+$( "#main" ).on( "click", ".printMe", function() {
+    $("#printable").css("display", "block");
+    });
+
+$(".close").click(function(){
+  $("#printable").css("display", "none");
+      });
+
+$(document).click(function(event) {
+   var closeit = document.getElementById('printable');
+   if (event.target == closeit) {
+      $("#printable").css("display", "none");
+      }
+      });
+
+//they can only select two terms to compare....
+$( "#past" ).on( "change", "input[name='term']:checked", function() {
+  var cnt = $("input[name='term']:checked").length;
+  if (cnt > 2) {
+    $("input[name='term']:checked").first().prop( "checked", false );
+  }
+});
+
+function showWait() {
+
+  $( "#searchparams" ).prop( "disabled", true );
+  $( "#runsearch" ).prop( "disabled", true );
+  //$( "#searchparams" ).addClass( "hideme" );
+  $( "form" ).addClass( "hideme" );
+  $( "#runsearch" ).addClass( "hideme" );
+  if (searches.length > 0) {
+    $("#results").append('<div id="loading"><p>Searching -- please wait....</p><progress id="fetchresults" value="1" max="100"></progress></div>');
+    $( "#chart_div" ).addClass( "hideme" );
+  } else {
+    $( "#search" ).append( '<div id="baseline">Loading baseline...<progress id="fetchresults" value="1" max="100"></progress></div>' );
+  }
+  //$( "#past" ).addClass( "hideme" );
+  }
+
+function showDone() {
+  $( "#searchparams" ).prop( "disabled", false );
+  $( "#runsearch" ).prop( "disabled", false );
+  $( "form" ).removeClass( "hideme" );
+  $( "#runsearch" ).removeClass( "hideme" );
+  $( "#results" ).removeClass( "hideme" );
+  $("#results #loading").remove();
+  $("#search #baseline").remove();
+  //$( "#past" ).removeClass( "hideme" );
+  }
+
+function showSearches() {
+    $( "#past" ).empty();
+    $( "#past" ).append("<dl>");
+    for (var i = 1; i < searches.length; i++) {
+      $("#past dl").append('<dt class="pastsearch"><a href="#!">' + searches[i].term + "</a></dt>");
+      $("#past dt").last().data("searchIndex", i);
+      }
+      if (searches.length > 1) {
+        $( "#pastsearch" ).removeClass("hideme");
+      }
+      if (searches.length > 2) {
+        $("#past dl").after('<input id="showcompare" type="button" value="Compare terms" />')
+      }
+    }
+
+//search a term and set up for searching by State
+function dosearch(prox, or, and, phrase) {
+  var searchString = searchStringer(prox, or, and, phrase);
+  showWait();
+  stateClone = states.slice(0);
+  while (stateCounts.length) { stateCounts.pop(); }
+  $.ajax({
+  url: 'http://chroniclingamerica.loc.gov/search/pages/results/list/',
+  jsonp: "callback",
+  dataType: "jsonp",
+  error: function () {
+    alert("Oops, something went wrong. Please try again!")
+    return;
+  },
+  data: {
+  rows: '1',
+  date1: startyear,
+  date2: endyear,
+  proxtext: prox,
+  ortext: or,
+  andtext: and,
+  phrasetext: phrase,
+  dateFilterType: 'yearRange',
+  page: '1',
+  format: 'json'
+ },
+  success:  function( data ) {
+    // check for null result
+    console.log(data.totalItems);
+
+    if (data.totalItems == '0') {
+      alert ('Nothing found for "' + searchString + '". Please try another search');
+      showDone();
+      return;
+    }
+    search = {
+      'term': searchString,
+      'parts': [prox, or, and, phrase],
+      'count': data.totalItems,
+      'stateCounts': []
+    };
+    searches.push(search);
+    getStateCounts(prox, or, and, phrase);
+  }
+  });
+}
+
+function doNewSearch(term) {
+  checktime();
+
+  function checktime() {
+    var t1 = performance.now();
+    var timediff = t1 - pausetime;
+    if (timediff > waitTime) {
+      callutils();
+    } else {
+      setTimeout(checktime, 30);
+    }
+  }
+
+  function callutils() {
+    calltime = performance.now();
+    //console.log(calltime - pausetime);
+    pausetime = calltime;
+    $.ajax({
+      url: 'https://www.loc.gov/newspapers/index/location_state/',
+      error: function () {
+        waitTime = waitTime+10;
+        //alert("Oops, something went wrong. Please try again!")
+        //return;
+      },
+      data: {
+        all: 'true',
+        q: term,
+        fo: 'json'
+      },
+      success: function( data ) {
+        var total = data.search.hits
+        if (total == '0') {
+          alert ('Nothing found for "' + searchString + '". Please try another search');
+          showDone();
+          return;
+        }
+        console.log(data.facets);
+        search = {
+          'term': term,
+          'count': total,
+          'stateCounts': []
+        };
+        searches.push(search);
+      }
+    });
+  }
+}
+
+//get counts for each State
+function getStateCounts(prox, or, and, phrase) {
+  state = stateClone.pop();
+	csearch(prox, or, and, phrase, state);
+	if (stateClone.length) {
+      getStateCounts(prox, or, and, phrase);
+	} else {
+		return;
+		}
+}
+
+function csearch(prox, or, and, phrase, state) {
+  checktime();
+
+  function checktime() {
+    var t1 = performance.now();
+    var timediff = t1 - pausetime;
+    if (timediff > waitTime) {
+      console.log(timediff);
+      callutils();
+    } else {
+      setTimeout(checktime, 30);
+    }
+  }
+
+  function callutils() {
+    pausetime = performance.now();
+      $.ajax({
+    	url: 'http://chroniclingamerica.loc.gov/search/pages/results/list/',
+      jsonp: "callback",
+      dataType: "jsonp",
+      error: function () {
+        alert("Oops, something went wrong. Please try again!")
+        return;
+      },
+    	data: {
+    	rows: '1',
+      date1: startyear,
+      date2: endyear,
+    	state: state,
+    	proxtext: prox,
+      ortext: or,
+      andtext: and,
+      phrasetext: phrase,
+      dateFilterType: 'yearRange',
+    	page: '1',
+    	format: 'json'
+     },
+      success:  function( data ) {
+        count = data.totalItems;
+        myIndex = searches.length - 1;
+        mySearch = searches[myIndex];
+        total = mySearch.count;
+        proportion = count / total;
+        stateCount = {
+          'state': state,
+          'count': count,
+          'proportion': proportion
+        };
+        mySearch.stateCounts.push(stateCount);
+        $("progress").attr("value", mySearch.stateCounts.length*2.08);
+        if (mySearch.stateCounts.length == states.length) {
+          if (searches.length > 1) {
+            showSearches();
+          }
+          displayHandler('proportional');
+          //if ($( "input:radio[name=charttype]:checked" ).val() == "proportional") {
+          //  displayHandler('proportional');
+          //} else {
+          //  displayHandler('counts');
+          //}
+        }
+      }
+         });
+    }
+}
+
+function searchStringer(prox, or, and, phrase) {
+  var searchStringParts = [];
+  if (prox) {
+    var proxParts = prox.split(" ");
+    proxParts = proxParts.join(" NEAR ");
+    searchStringParts.push(proxParts);
+  }
+  if (or) {
+    var orParts = or.split(" ");
+    orParts = orParts.join(" OR ");
+    searchStringParts.push(orParts);
+  }
+  if (and) {
+    var andParts = and.split(" ");
+    andParts = andParts.join(" AND ");
+    searchStringParts.push(andParts);
+  }
+  if (phrase) {
+    var phrasePart = '"' + phrase + '"';
+    searchStringParts.push(phrasePart);
+  }
+  var searchString = searchStringParts.join(" AND ");
+  return searchString;
+}
+
+//display charts by proportion
+function displayHandler(charttype, searchIndex) {
+  if(typeof searchIndex == 'undefined') {
+    var searchIndex = searches.length - 1;
+  }
+  var stateCompArray =  [['State', 'Comparison', 'Tooltip']];
+  var stateCountArray =  [['State', 'Results', 'Tooltip']];
+  showDone();
+  var mySearch = searches[searchIndex];
+  if (searchIndex < 1) {
+    return;
+  } else {
+    $( "#results" ).empty();
+  }
+  $( "#results" ).append( '<div id="chart_div">' );
+  var states = keysrt(mySearch.stateCounts, 'state');
+  var basestates = keysrt(searches[0].stateCounts, 'state');
+  //if (charttype == "proportional") {
+    $("#chart_div").before("<h3>Proportion of results for '" + mySearch.term + "' in newspapers</h3>")
+    $.each( states, function( i, stateitem ) {
+         //comparison = stateitem.proportion - basestates[i].proportion;
+         if (basestates[i].count > 0) {
+           comparison = stateitem.count / basestates[i].count;
+         } else {
+           comparison = 0;
+         }
+         tipText = "<strong>" + Math.round10((stateitem.proportion*100), -2) + "%</strong> of US total</br>" + "(" + stateitem.state + " represents " + Math.round10((basestates[i].proportion*100), -2) + "% of all results)";
+         stateCompArray.push([stateitem.state, comparison, tipText]);
+         });
+    var data = google.visualization.arrayToDataTable(stateCompArray);
+    data.setColumnProperty(2, 'role', 'tooltip');
+    data.setColumnProperty(2, 'html', true);
+    var options = compOptions;
+    //$("#chart_div").after('<input id="showcounts" class="toggleview" type="button" name="' + searchIndex + '"value="Show raw counts" />')
+  //}
+  //else {
+  //  $("#chart_div").before("<h3>Total count of '" + mySearch.term + "' in newspapers</h3>")
+  //  $.each( states, function( i, stateitem ) {
+  //    tipText = "<strong>" + stateitem.count.toLocaleString() + "</strong> results <br/>(out of " + basestates[i].count.toLocaleString() + " for the state)";
+  //       stateCountArray.push([stateitem.state, stateitem.count, tipText]);
+  //       });
+  //  var data = google.visualization.arrayToDataTable(stateCountArray);
+  //  data.setColumnProperty(2, 'role', 'tooltip');
+  //  data.setColumnProperty(2, 'html', true);
+  //  var options = countOptions;
+  //  $("#chart_div").after('<input id="showprops" class="toggleview" type="button" name="' + searchIndex + '" value="Show proportions" />')
+  //}
+  if (startyear != "1789" || endyear != "1943" ) {
+    $("#results h3").append(' (' + startyear + ' to ' + endyear + ')');
+    }
+  var chart = new google.visualization.GeoChart( document.getElementById('chart_div') );
+
+  //Here comes the clicky bit...
+  function selectHandler() {
+  var selectedItem = chart.getSelection()[0];
+  if (selectedItem) {
+    var selectstate = data.getValue(selectedItem.row, 0);
+    //alert('The user selected ' + mySearch.term + ' in the context of ' + selectstate);
+    var resultsURL = 'http://chroniclingamerica.loc.gov/search/pages/results/';
+    resultsURL = resultsURL + '?state=' + selectstate + '&dateFilterType=yearRange&date1=' + $("#startyear").val() + '&date2=' + $("#endyear").val() + '&proxtext=' + mySearch.parts[0] + '&ortext=' + mySearch.parts[1] + '&andtext=' + mySearch.parts[2] +
+       '&phrasetext=' + mySearch.parts[3] + '&searchType=advanced';
+    window.open(resultsURL,'_blank');
+  }
+}
+
+  google.visualization.events.addListener(chart, 'select', selectHandler);
+  google.visualization.events.addListener(chart, 'ready', function () {
+    dataURL = chart.getImageURI();
+    getprint(dataURL);
+  });
+  chart.draw(data, options);
+}
+
+//Prepare and display term comparison chart
+function compareTerms(searchone, searchtwo) {
+  var basestates = keysrt(searches[0].stateCounts, 'state');
+  $( "#results" ).empty();
+  $( "#results" ).append( '<div id="chart_div">' );
+  var termCompArray =  [['State', 'Term Comparison', 'Tooltip']];
+  var termOne = keysrt(searches[searchone].stateCounts, 'state');
+  var termTwo = keysrt(searches[searchtwo].stateCounts, 'state');
+  $.each( termOne, function( i, stateitem ) {
+    //make our first proportion negative, then add them together to find the midpoint
+    if (basestates[i].count > 0) {
+      oneprop = -Math.abs(stateitem.count / basestates[i].count);
+      twoprop = termTwo[i].count / basestates[i].count;
+      comparison = oneprop + twoprop;
+    } else {
+      comparison = 0;
+    }
+    tipText = "<span style='color:red; font-weight: bold;'>" + searches[searchone].term + "</span> represents " + Math.round10((stateitem.proportion*100), -2) + "% of US total</br>" +
+              "<span style='color:blue; font-weight: bold;'>" + searches[searchtwo].term + "</span>  represents " + Math.round10((termTwo[i].proportion*100), -2) + "% of US total";
+    termCompArray.push([stateitem.state, comparison, tipText]);
+    });
+  $("#chart_div").before("<h3>Proportion of <span style='color:red'>'" + searches[searchone].term + "'</span> vs <span style='color:blue'>'" + searches[searchtwo].term + "'</span> in newspapers</h3>")
+  var data = google.visualization.arrayToDataTable(termCompArray);
+  data.setColumnProperty(2, 'role', 'tooltip');
+  data.setColumnProperty(2, 'html', true);
+  var options = {
+                     resolution: 'provinces',
+                     region: 'US',
+                     tooltip: {isHtml: true},
+                     colorAxis: {colors: ['red', 'blue']}
+                    };
+
+  if (startyear != "1789" || endyear != "1943" ) {
+    console.log(startyear + " " + endyear);
+      $("#results h3").append(' (' + $("#startyear").val() + ' to ' + $("#endyear").val() + ')');
+    }
+  var chart = new google.visualization.GeoChart( document.getElementById('chart_div') );
+  google.visualization.events.addListener(chart, 'ready', function () {
+    dataURL = chart.getImageURI();
+    getprint(dataURL,"compare");
+  });
+  chart.draw(data, options);
+}
+
+//Google doesn't support titles for GeoCharts, so we draw the chart to a hidden camvas, overlay our text
+//and use canvas-to-data-uri to send *that* to a modal
+function getprint(dataURL,type) {
+  var c2 = document.createElement("canvas");
+  c2.width = 900;
+  c2.height = 550;
+  //var c2 = document.getElementById("myCanvas2");
+  var ctx2 = c2.getContext("2d");
+  ctx2.clearRect(0, 0, c2.width, c2.height);
+  var background = new Image();
+  background.src = dataURL;
+
+  background.onload = function(){
+      ctx2.beginPath();
+      ctx2.rect(0, 0, 900, 550);
+      ctx2.fillStyle = "white";
+      ctx2.fill();
+      ctx2.drawImage(background,5,40,825,500);
+      ctx2.fillStyle = "black";
+      ctx2.font = '25px "IM Fell DW Pica"';
+      var titletext = $( "#results h3" ).text();
+      if (titletext.length > 80) {
+        //titletext = titletext.slice(0, 80) + "...";
+        var multiline = 1;
+      }
+      if (type == "compare") {
+        //yes, we have to specially draw our reds and our blues...
+        var titleparts = titletext.split("'");
+        ctx2.fillText(titleparts[0],35,50);
+        var offset = 40 + ctx2.measureText(titleparts[0]).width;
+        ctx2.fillStyle = "red";
+        ctx2.fillText("'" + titleparts[1] + "'",offset,50);
+        offset = offset + ctx2.measureText(titleparts[1]).width + 12;
+        ctx2.fillStyle = "black";
+        if (!multiline) {
+          ctx2.fillText(titleparts[2],offset,50);
+          offset = offset + ctx2.measureText(titleparts[2]).width;
+          ctx2.fillStyle = "blue";
+          ctx2.fillText("'" + titleparts[3] + "'",offset,50);
+          offset = offset + ctx2.measureText(titleparts[3]).width + 12;
+          ctx2.fillStyle = "black";
+          ctx2.fillText(titleparts[4],offset,50);
+        } else {
+          ctx2.fillText(titleparts[2],35,77);
+          var twooffset = 40 + ctx2.measureText(titleparts[2]).width;
+          ctx2.fillStyle = "blue";
+          ctx2.fillText("'" + titleparts[3] + "'",twooffset,77);
+          twooffset = twooffset + ctx2.measureText(titleparts[3]).width + 12;
+          ctx2.fillStyle = "black";
+          ctx2.fillText(titleparts[4],twooffset,77);
+        }
+      } else {
+        if (!multiline) {
+          ctx2.fillText(titletext,35,50);
+        } else {
+          titletext = titletext.split(" ");
+          var titlepart1 = titletext.slice(0, 12).join(" ");
+          ctx2.fillText(titlepart1,35,50);
+          var titlepart2 = titletext.slice(12).join(" ");
+          ctx2.fillText(titlepart2,35,77);
+        }
+      }
+      ctx2.font = '15px "IM Fell DW Pica"';
+      ctx2.fillText("Made with News in Proportion",630,465);
+      ctx2.fillText("http://esperr.github.io/newsinproportion",630,480)
+      ctx2.fillText("Data from Chronicling America",630,510);
+      ctx2.fillText("http://chroniclingamerica.loc.gov/",630,525)
+      var newdataURL = c2.toDataURL();
+      $( "#printable-stuff img" ).remove();
+      $( "#printable-stuff" ).append('<img src="' + newdataURL + '">');
+      $( "#results" ).append('<a href="#!" class="printMe">Printable version</a>');
+  }
+}
+
+//freely adopted from http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
+function getParameterByName(name) {
+    var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
+
+function keysrt(arr, key, reverse) {
+    var sortOrder = 1;
+    if(reverse){
+        sortOrder = -1;
+    }
+    return arr.sort(function(a, b) {
+        var x = a[key],
+            y = b[key];
+        return sortOrder * ((x < y) ? -1 : ((x > y) ? 1 : 0));
+    });
+}
+})
+
+();
+
+</script>
+</body>
+</html>
